@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/lib/api'
@@ -14,8 +15,37 @@ const DashboardOverview = () => {
     () => api.get('/admin/time-slots')
   )
 
+  // Load custom fields to resolve names by fieldId
+  const { data: customFieldsData } = useQuery(
+    'dashboard-custom-fields',
+    () => api.get('/admin/custom-fields')
+  )
+
   const bookings = bookingsData?.data.bookings || []
   const timeSlots = timeSlotsData?.data.timeSlots || []
+
+  const customFieldNamesById = useMemo(() => {
+    const map: Record<string, string> = {}
+    const defs = customFieldsData?.data?.customFields || []
+    defs.forEach((d: any) => { map[d._id] = d.name })
+    return map
+  }, [customFieldsData])
+
+  const getCustomFieldValueByName = (booking: any, fieldName: string) => {
+    const match = booking?.customFields?.find((f: any) => {
+      const cfgName = customFieldNamesById[f.fieldId]
+      return f.fieldName === fieldName || cfgName === fieldName
+    })
+    return match?.value ?? ''
+  }
+
+  const getDisplayName = (booking: any) => {
+    return getCustomFieldValueByName(booking, 'user_name') || booking.customerName || ''
+  }
+
+  const getDisplayEmail = (booking: any) => {
+    return getCustomFieldValueByName(booking, 'email') || booking.customerEmail || ''
+  }
 
   const stats = {
     totalBookings: bookings.length,
@@ -102,8 +132,8 @@ const DashboardOverview = () => {
               {bookings.slice(0, 5).map((booking: any) => (
                 <div key={booking._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">{booking.customerName}</p>
-                    <p className="text-sm text-gray-600">{booking.customerEmail}</p>
+                    <p className="font-medium">{getDisplayName(booking) || '—'}</p>
+                    <p className="text-sm text-gray-600">{getDisplayEmail(booking) || '—'}</p>
                     <p className="text-xs text-gray-500">
                       {new Date(booking.bookingDate).toLocaleDateString('vi-VN')} - {booking.timeSlot}
                     </p>

@@ -28,9 +28,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/admin/login'
+      const requestUrl: string = error.config?.url || ''
+      const currentPath = window.location.pathname || ''
+      const hasToken = !!localStorage.getItem('token')
+      const isAdminEndpoint = requestUrl.includes('/admin') || requestUrl.includes('/auth')
+
+      // Only redirect if user is on admin pages or has a token and is calling admin/auth endpoints
+      if ((currentPath.startsWith('/admin') || hasToken) && isAdminEndpoint) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/admin/login'
+      }
     }
     return Promise.reject(error)
   }
@@ -54,6 +62,8 @@ export const authAPI = {
 export const bookingAPI = {
   getAvailableTimeSlots: (date: string) =>
     api.get(`/bookings/time-slots/${date}`),
+  getPublicCustomFields: () =>
+    api.get('/bookings/custom-fields'),
   createBooking: (bookingData: any) =>
     api.post('/bookings', bookingData),
   getBookings: (params?: any) =>

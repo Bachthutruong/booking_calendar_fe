@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { bookingAPI, adminAPI } from '@/lib/api'
+import { bookingAPI } from '@/lib/api'
 import { formatDate, formatTime } from '@/lib/utils'
 import { User, ArrowLeft, CheckCircle, Clock, Calendar } from 'lucide-react'
 
@@ -49,10 +49,10 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<BookingFormData>()
 
-  // Get custom fields
+  // Get public custom fields
   useQuery(
     'customFields',
-    () => adminAPI.getCustomFields(),
+    () => bookingAPI.getPublicCustomFields(),
     {
       onSuccess: (data) => {
         setCustomFields(data.data.customFields || [])
@@ -62,7 +62,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
 
   // Create booking mutation
   const createBookingMutation = useMutation(
-    (bookingData: { customFields: any[] }) => bookingAPI.createBooking({
+    (bookingData: { customFields: any[]; customerName: string; customerEmail: string; customerPhone?: string }) => bookingAPI.createBooking({
       ...bookingData,
       bookingDate: selectedDate,
       timeSlot: selectedTimeSlot.split('-')[0] // Extract startTime from "startTime-endTime" format
@@ -86,21 +86,24 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
   )
 
   const onSubmit = (data: BookingFormData) => {
-    // Process custom fields
+    // Process custom fields from nested form data
     const processedCustomFields = customFields
       .filter(field => field.isActive)
       .map(field => {
-        const fieldName = `customFields.${field._id}`
-        const value = data[fieldName]
+        const rawValue = data?.customFields?.[field._id]
+        const value = rawValue === undefined || rawValue === null ? '' : rawValue
         return {
           fieldId: field._id,
           fieldName: field.name,
-          value: value || ''
+          value
         }
-      }).filter(field => field.value)
+      })
 
     createBookingMutation.mutate({
-      customFields: processedCustomFields
+      customFields: processedCustomFields,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone
     })
   }
 
@@ -379,7 +382,8 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
             </CardHeader>
             <CardContent className="p-6">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Custom Fields Only */}
+
+                {/* Custom Fields */}
                 {customFields.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {customFields

@@ -50,9 +50,34 @@ const BookingsList = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
 
+  // Custom fields definitions for labeling
+  const [customFieldLabelsById, setCustomFieldLabelsById] = useState<Record<string, string>>({})
+  const [customFieldNamesById, setCustomFieldNamesById] = useState<Record<string, string>>({})
+
   useEffect(() => {
     fetchBookings()
   }, [searchTerm, statusFilter, dateFilter, currentPage, pageSize])
+
+  useEffect(() => {
+    // Load custom field definitions for labels (admin endpoint)
+    const loadCustomFields = async () => {
+      try {
+        const res = await api.get('/admin/custom-fields')
+        const defs = res.data?.customFields || []
+        const byId: Record<string, string> = {}
+        const nameById: Record<string, string> = {}
+        defs.forEach((d: any) => {
+          byId[d._id] = d.label
+          nameById[d._id] = d.name
+        })
+        setCustomFieldLabelsById(byId)
+        setCustomFieldNamesById(nameById)
+      } catch (e) {
+        // Non-blocking
+      }
+    }
+    loadCustomFields()
+  }, [])
 
   const fetchBookings = async () => {
     try {
@@ -82,6 +107,22 @@ const BookingsList = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const getCustomFieldValueByName = (booking: Booking, fieldName: string) => {
+    const match = booking.customFields?.find((f) => {
+      const cfgName = customFieldNamesById[f.fieldId]
+      return (f as any).fieldName === fieldName || cfgName === fieldName
+    })
+    return match?.value ?? ''
+  }
+
+  const getDisplayName = (booking: Booking) => {
+    return getCustomFieldValueByName(booking, 'user_name') || booking.customerName || ''
+  }
+
+  const getDisplayEmail = (booking: Booking) => {
+    return getCustomFieldValueByName(booking, 'email') || booking.customerEmail || ''
   }
 
   const updateBookingStatus = async (id: string, status: string) => {
@@ -319,7 +360,7 @@ const BookingsList = () => {
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-gray-500" />
                           <div>
-                            <div className="font-medium">{booking.customerName}</div>
+                            <div className="font-medium">{getDisplayName(booking) || '—'}</div>
                             {booking.notes && (
                               <div className="text-xs text-gray-500 truncate max-w-[150px]" title={booking.notes}>
                                 {booking.notes}
@@ -332,8 +373,8 @@ const BookingsList = () => {
                         <div className="space-y-1">
                           <div className="flex items-center gap-1 text-sm">
                             <Mail className="h-3 w-3 text-gray-400" />
-                            <span className="truncate max-w-[120px]" title={booking.customerEmail}>
-                              {booking.customerEmail}
+                            <span className="truncate max-w-[120px]" title={getDisplayEmail(booking)}>
+                              {getDisplayEmail(booking) || '—'}
                             </span>
                           </div>
                           {booking.customerPhone && (
@@ -518,11 +559,11 @@ const BookingsList = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{selectedBooking.customerName}</span>
+                        <span className="font-medium">{getDisplayName(selectedBooking) || '—'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-gray-500" />
-                        <span>{selectedBooking.customerEmail}</span>
+                        <span>{getDisplayEmail(selectedBooking) || '—'}</span>
                       </div>
                       {selectedBooking.customerPhone && (
                         <div className="flex items-center gap-2">
@@ -559,12 +600,15 @@ const BookingsList = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Thông tin bổ sung</h3>
                   <div className="grid md:grid-cols-2 gap-4">
-                    {selectedBooking.customFields.map((field, index) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                        <span className="font-medium text-gray-700">{field.fieldName || 'Field'}:</span>
-                        <p className="text-gray-900 mt-1">{field.value}</p>
-                      </div>
-                    ))}
+                    {selectedBooking.customFields.map((field, index) => {
+                      const label = customFieldLabelsById[field.fieldId] || field.fieldName || 'Trường'
+                      return (
+                        <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                          <span className="font-medium text-gray-700">{label}:</span>
+                          <p className="text-gray-900 mt-1">{Array.isArray(field.value) ? field.value.join(', ') : String(field.value)}</p>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
