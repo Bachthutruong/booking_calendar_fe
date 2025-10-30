@@ -26,11 +26,12 @@ const UsersManagement = () => {
   const queryClient = useQueryClient()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
-    role: 'customer' as 'admin' | 'staff' | 'customer',
+    role: 'staff' as 'admin' | 'staff' | 'customer',
     phone: '',
     isActive: true
   })
@@ -128,23 +129,41 @@ const UsersManagement = () => {
       email: '',
       password: '',
       name: '',
-      role: 'customer',
+      role: 'staff',
       phone: '',
       isActive: true
     })
+    setConfirmPassword('')
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    const submitData = editingUser 
-      ? { ...formData, password: undefined } // Don't update password when editing
-      : formData
 
     if (editingUser) {
-      updateMutation.mutate({ id: editingUser._id, data: submitData })
+      // If password provided, validate confirm and min length
+      if (formData.password) {
+        if (formData.password.length < 6) {
+          toast({ title: 'Lỗi', description: 'Mật khẩu tối thiểu 6 ký tự', variant: 'destructive' })
+          return
+        }
+        if (formData.password !== confirmPassword) {
+          toast({ title: 'Lỗi', description: 'Xác nhận mật khẩu không khớp', variant: 'destructive' })
+          return
+        }
+      }
+
+      const payload = { ...formData }
+      // If password empty, do not send it
+      if (!formData.password) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _omitPassword, ...dataWithoutPassword } = payload
+        updateMutation.mutate({ id: editingUser._id, data: dataWithoutPassword })
+      } else {
+        updateMutation.mutate({ id: editingUser._id, data: payload })
+      }
     } else {
-      createMutation.mutate(submitData)
+      // On create: send full payload including phone
+      createMutation.mutate(formData)
     }
   }
 
@@ -158,6 +177,7 @@ const UsersManagement = () => {
       phone: user.phone || '',
       isActive: user.isActive
     })
+    setConfirmPassword('')
     setIsDialogOpen(true)
   }
 
@@ -255,7 +275,6 @@ const UsersManagement = () => {
                   <SelectItem value="all">Tất cả vai trò</SelectItem>
                   <SelectItem value="admin">Quản trị viên</SelectItem>
                   <SelectItem value="staff">Nhân viên</SelectItem>
-                  <SelectItem value="customer">Khách hàng</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -293,10 +312,6 @@ const UsersManagement = () => {
         <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700">
           <UserPlus className="h-4 w-4 mr-2" />
           Tạo người dùng mới
-        </Button>
-        <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-          <Shield className="h-4 w-4 mr-2" />
-          Quản lý quyền
         </Button>
       </div>
 
@@ -534,7 +549,7 @@ const UsersManagement = () => {
               </div>
             </div>
 
-            {!editingUser && (
+            {!editingUser ? (
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Mật khẩu
@@ -544,11 +559,41 @@ const UsersManagement = () => {
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required={!editingUser}
+                  required
                   minLength={6}
                   className="border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
                 <p className="text-xs text-gray-500">Tối thiểu 6 ký tự</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password" className="text-sm font-medium text-gray-700">
+                    Mật khẩu mới (tuỳ chọn)
+                  </Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    minLength={6}
+                    placeholder="Để trống nếu không đổi"
+                    className="border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">
+                    Xác nhận mật khẩu
+                  </Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Nhập lại mật khẩu mới"
+                    className="border-gray-300 focus:border-green-500 focus:ring-green-500"
+                  />
+                </div>
               </div>
             )}
 
@@ -563,7 +608,6 @@ const UsersManagement = () => {
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
                 >
-                  <option value="customer">Khách hàng</option>
                   <option value="staff">Nhân viên</option>
                   <option value="admin">Quản trị viên</option>
                 </select>

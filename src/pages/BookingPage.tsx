@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import DateSelectorWithTimeSlots from '@/components/booking/DateSelectorWithTimeSlots'
+import DateSelector from '@/components/booking/DateSelector'
 import TimeSlotSelector from '@/components/booking/TimeSlotSelector'
 import BookingForm from '@/components/booking/BookingForm'
 import Footer from '@/components/common/Footer'
@@ -55,11 +55,33 @@ const BookingPage = () => {
   const stepInfo = getStepInfo()
   const StepIcon = stepInfo.icon
 
+  const renderSummaryBadges = () => {
+    if (!selectedDate) return null
+    return (
+      <div className="bg-white/90 backdrop-blur-sm border-b">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm bg-blue-50 border-blue-200 text-blue-700">
+              <Calendar className="h-4 w-4" />
+              <span>{new Date(selectedDate).toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+            {selectedTimeSlot && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm bg-green-50 border-green-200 text-green-700">
+                <Clock className="h-4 w-4" />
+                <span>{selectedTimeSlot}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const renderStep = () => {
     switch (step) {
       case 'date':
         return (
-          <DateSelectorWithTimeSlots
+          <DateSelector
             onDateSelect={handleDateSelect}
             onNext={() => setStep('time')}
           />
@@ -159,6 +181,9 @@ const BookingPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Summary badges only on time selection step */}
+      {step === 'time' && renderSummaryBadges()}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {renderStep()}

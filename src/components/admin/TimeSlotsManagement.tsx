@@ -31,15 +31,17 @@ const TimeSlotsManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [deleteGroup, setDeleteGroup] = useState<TimeSlot[] | null>(null)
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null)
-  const [activeFilter, setActiveFilter] = useState<'all' | 'specific' | 'weekend' | 'allDays'>('all')
+  const [activeFilter, setActiveFilter] = useState<'all' | 'specific' | 'weekday' | 'allDays'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [formData, setFormData] = useState({
-    type: 'all' as 'all' | 'weekend' | 'specific',
+    type: 'all' as 'all' | 'weekday' | 'specific',
     timeSlots: '', // Format: "8:00-9:00,9:00-10:00,10:00-11:00"
     specificDate: '',
+    dayOfWeek: 1,
     maxBookings: 1,
-    isActive: true
+    isActive: true,
+    closed: false
   })
 
   const { data: timeSlotsData, isLoading } = useQuery(
@@ -127,15 +129,17 @@ const TimeSlotsManagement = () => {
       timeSlots: '',
       specificDate: '',
       maxBookings: 1,
-      isActive: true
+      dayOfWeek: 1,
+      isActive: true,
+      closed: false
     })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Parse time slots from string format
-    const timeSlotList = formData.timeSlots
+    // Parse time slots from string format (or empty if closed)
+    const timeSlotList = formData.closed ? [] : formData.timeSlots
       .split(',')
       .map(slot => slot.trim())
       .filter(slot => slot.includes('-'))
@@ -144,11 +148,12 @@ const TimeSlotsManagement = () => {
         return { startTime: start, endTime: end }
       })
 
-    const submitData = {
+    const submitData: any = {
       type: formData.type,
       timeSlots: timeSlotList,
       specificDate: formData.type === 'specific' ? formData.specificDate : undefined,
-      maxBookings: formData.maxBookings,
+      dayOfWeek: formData.type === 'weekday' ? formData.dayOfWeek : undefined,
+      maxBookings: formData.closed ? 0 : formData.maxBookings,
       isActive: formData.isActive
     }
 
@@ -157,11 +162,8 @@ const TimeSlotsManagement = () => {
       const allSlotsInGroup = timeSlots.filter((s: TimeSlot) => {
         if (editingSlot.specificDate) {
           return s.specificDate === editingSlot.specificDate && s.maxBookings === editingSlot.maxBookings && s.isActive === editingSlot.isActive
-        } else if (editingSlot.isWeekend) {
-          return s.isWeekend && s.maxBookings === editingSlot.maxBookings && s.isActive === editingSlot.isActive
         } else {
-          // Đối với "tất cả ngày", tìm tất cả slots không phải specific và không phải weekend
-          return !s.specificDate && !s.isWeekend && s.maxBookings === editingSlot.maxBookings && s.isActive === editingSlot.isActive
+          return !s.specificDate && s.dayOfWeek === editingSlot.dayOfWeek && s.maxBookings === editingSlot.maxBookings && s.isActive === editingSlot.isActive
         }
       })
       
@@ -193,11 +195,9 @@ const TimeSlotsManagement = () => {
     const allSlotsInGroup = timeSlots.filter((s: TimeSlot) => {
       if (slot.specificDate) {
         return s.specificDate === slot.specificDate && s.maxBookings === slot.maxBookings && s.isActive === slot.isActive
-      } else if (slot.isWeekend) {
-        return s.isWeekend && s.maxBookings === slot.maxBookings && s.isActive === slot.isActive
       } else {
-        // Đối với "tất cả ngày", tìm tất cả slots không phải specific và không phải weekend
-        return !s.specificDate && !s.isWeekend && s.maxBookings === slot.maxBookings && s.isActive === slot.isActive
+        // Nhóm theo cùng dayOfWeek cho các quy tắc theo thứ
+        return !s.specificDate && s.dayOfWeek === slot.dayOfWeek && s.maxBookings === slot.maxBookings && s.isActive === slot.isActive
       }
     })
     
@@ -215,12 +215,16 @@ const TimeSlotsManagement = () => {
     // Format specific date for input field (YYYY-MM-DD format)
     const formattedDate = slot.specificDate ? new Date(slot.specificDate).toISOString().split('T')[0] : ''
     
+    const isClosedGroup = allSlotsInGroup.length > 0 && allSlotsInGroup.every((s: TimeSlot) => s.maxBookings === 0)
+
     setFormData({
-      type: slot.specificDate ? 'specific' : (slot.isWeekend ? 'weekend' : 'all'),
+      type: slot.specificDate ? 'specific' : 'weekday',
       timeSlots: timeSlotsString,
       specificDate: formattedDate,
+      dayOfWeek: slot.dayOfWeek,
       maxBookings: slot.maxBookings,
-      isActive: slot.isActive
+      isActive: slot.isActive,
+      closed: isClosedGroup
     })
     setIsDialogOpen(true)
   }
@@ -240,42 +244,53 @@ const TimeSlotsManagement = () => {
   // Group slots by their configuration (same type, same settings)
   const groupSlotsByConfig = (slots: TimeSlot[]) => {
     const groups: { [key: string]: TimeSlot[] } = {}
-    
+
+    const nonSpecific = slots.filter(s => !s.specificDate)
+    // Build signature -> set of days mapping to detect all-days rules
+    const signatureToDays = new Map<string, Set<number>>()
+    nonSpecific.forEach(s => {
+      const sig = `${s.startTime}-${s.endTime}-${s.maxBookings}-${s.isActive}`
+      if (!signatureToDays.has(sig)) signatureToDays.set(sig, new Set<number>())
+      signatureToDays.get(sig)!.add(s.dayOfWeek)
+    })
+
     slots.forEach(slot => {
       let key = ''
       if (slot.specificDate) {
-        // Nhóm theo ngày cụ thể và cấu hình
         key = `specific-${slot.specificDate}-${slot.maxBookings}-${slot.isActive}`
-      } else if (slot.isWeekend) {
-        // Nhóm tất cả cuối tuần (Thứ 7 và Chủ nhật) thành một nhóm
-        key = `weekend-${slot.maxBookings}-${slot.isActive}`
       } else {
-        // Nhóm tất cả ngày thường (Thứ 2-6) thành một nhóm
-        key = `allDays-${slot.maxBookings}-${slot.isActive}`
+        const sig = `${slot.startTime}-${slot.endTime}-${slot.maxBookings}-${slot.isActive}`
+        const days = signatureToDays.get(sig)
+        const isAllDays = days && days.size === 7
+        key = isAllDays
+          ? `allDays-${slot.maxBookings}-${slot.isActive}`
+          : `weekday-${slot.dayOfWeek}-${slot.maxBookings}-${slot.isActive}`
       }
-      
+
       if (!groups[key]) {
         groups[key] = []
       }
       groups[key].push(slot)
     })
-    
+
     return Object.values(groups)
   }
 
   // Get grouped slots for counting
   const allGroupedSlots = groupSlotsByConfig(timeSlots)
   const specificGroupedSlots = allGroupedSlots.filter(group => group[0].specificDate)
-  const weekendGroupedSlots = allGroupedSlots.filter(group => !group[0].specificDate && group[0].isWeekend)
-  const allDaysGroupedSlots = allGroupedSlots.filter(group => !group[0].specificDate && !group[0].isWeekend)
+  const allDaysGroupedSlots = allGroupedSlots.filter(group => !group[0].specificDate && new Set(group.map(g => g.dayOfWeek)).size > 1)
+  const weekdayGroupedSlots = allGroupedSlots.filter(group => !group[0].specificDate && new Set(group.map(g => g.dayOfWeek)).size === 1)
 
   // Filter grouped slots based on active filter
   const getFilteredGroupedSlots = () => {
     switch (activeFilter) {
       case 'specific':
         return specificGroupedSlots
-      case 'weekend':
-        return weekendGroupedSlots
+      case 'weekday':
+        return weekdayGroupedSlots
+      case 'all':
+        return allGroupedSlots
       case 'allDays':
         return allDaysGroupedSlots
       default:
@@ -293,7 +308,7 @@ const TimeSlotsManagement = () => {
   const paginatedGroupedSlots = filteredGroupedSlots.slice(startIndex, endIndex)
 
   // Reset to first page when filter changes
-  const handleFilterChange = (filter: 'all' | 'specific' | 'weekend' | 'allDays') => {
+  const handleFilterChange = (filter: 'all' | 'specific' | 'weekday' | 'allDays') => {
     setActiveFilter(filter)
     setCurrentPage(1)
   }
@@ -329,6 +344,7 @@ const TimeSlotsManagement = () => {
             <TableBody>
               {groupedSlots.map((group, groupIndex) => {
                 const firstSlot = group[0]
+                const isAllDaysGroup = !firstSlot.specificDate && new Set(group.map(s => s.dayOfWeek)).size === 7
                 
                 return (
                   <TableRow key={groupIndex}>
@@ -336,25 +352,31 @@ const TimeSlotsManagement = () => {
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
                           <span className="text-sm font-medium text-gray-600">
-                            {firstSlot.isWeekend ? 'WE' : (firstSlot.specificDate ? 'SP' : 'ALL')}
+                            {firstSlot.specificDate ? 'SP' : (isAllDaysGroup ? 'ALL' : ['CN','T2','T3','T4','T5','T6','T7'][firstSlot.dayOfWeek])}
                           </span>
                         </div>
                         <span className="text-sm font-medium text-gray-900">
-                          {firstSlot.isWeekend 
-                            ? 'Cuối tuần (Thứ 7, CN)' 
-                            : firstSlot.specificDate 
-                              ? `Ngày cụ thể: ${new Date(firstSlot.specificDate).toLocaleDateString('vi-VN')}`
-                              : 'Tất cả ngày (Thứ 2 - CN)'
-                          }
+                          {firstSlot.specificDate 
+                            ? `Ngày cụ thể: ${new Date(firstSlot.specificDate).toLocaleDateString('vi-VN')}`
+                            : isAllDaysGroup
+                              ? 'Tất cả ngày (Thứ 2 - Chủ nhật)'
+                              : `Theo thứ: ${['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][firstSlot.dayOfWeek]}`}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {(() => {
-                          // Lấy unique time slots để tránh duplicate
+                          const allClosed = group.every(s => s.maxBookings === 0)
+                          if (allClosed) {
+                            return (
+                              <span className="text-sm text-gray-400">Không có khung giờ</span>
+                            )
+                          }
+                          // Lấy unique time slots để tránh duplicate, loại bỏ sentinel 00:00-00:00
                           const uniqueTimeSlots = group.reduce((acc: string[], slot) => {
                             const timeSlot = `${slot.startTime}-${slot.endTime}`
+                            if (timeSlot === '00:00-00:00') return acc
                             if (!acc.includes(timeSlot)) {
                               acc.push(timeSlot)
                             }
@@ -441,8 +463,38 @@ const TimeSlotsManagement = () => {
         </p>
       </div>
 
-      {/* Filter Badges */}
-      <div className="flex justify-center gap-4 mb-6">
+      {/* Action Buttons */}
+      <div className="flex justify-center gap-4">
+        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Tạo khung giờ mới
+        </Button>
+        <Button 
+          onClick={() => {
+            setFormData({ ...formData, type: 'weekday', dayOfWeek: 1 })
+            setIsDialogOpen(true)
+          }} 
+          variant="outline" 
+          className="border-green-300 text-green-700 hover:bg-green-50"
+        >
+          <CalendarDays className="h-4 w-4 mr-2" />
+          Cài đặt theo thứ
+        </Button>
+        <Button 
+          onClick={() => {
+            setFormData({ ...formData, type: 'specific' })
+            setIsDialogOpen(true)
+          }} 
+          variant="outline" 
+          className="border-purple-300 text-purple-700 hover:bg-purple-50"
+        >
+          <CalendarDays className="h-4 w-4 mr-2" />
+          Cài đặt ngày cụ thể
+        </Button>
+      </div>
+
+      {/* Filter Badges - moved below Action Buttons to be above the table */}
+      <div className="flex justify-start gap-4 mb-6">
         <Badge 
           variant={activeFilter === 'all' ? "default" : "outline"}
           className={`cursor-pointer px-4 py-2 text-sm ${
@@ -468,16 +520,16 @@ const TimeSlotsManagement = () => {
           Ngày cụ thể ({specificGroupedSlots.length})
         </Badge>
         <Badge 
-          variant={activeFilter === 'weekend' ? "default" : "outline"}
+          variant={activeFilter === 'weekday' ? "default" : "outline"}
           className={`cursor-pointer px-4 py-2 text-sm ${
-            activeFilter === 'weekend' 
+            activeFilter === 'weekday' 
               ? 'bg-green-600 text-white hover:bg-green-700' 
               : 'hover:bg-green-50'
           }`}
-          onClick={() => handleFilterChange('weekend')}
+          onClick={() => handleFilterChange('weekday')}
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          Cuối tuần ({weekendGroupedSlots.length})
+          Theo thứ ({weekdayGroupedSlots.length})
         </Badge>
         <Badge 
           variant={activeFilter === 'allDays' ? "default" : "outline"}
@@ -491,36 +543,6 @@ const TimeSlotsManagement = () => {
           <Globe className="h-4 w-4 mr-2" />
           Tất cả ngày ({allDaysGroupedSlots.length})
         </Badge>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4">
-        <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Tạo khung giờ mới
-        </Button>
-        <Button 
-          onClick={() => {
-            setFormData({ ...formData, type: 'weekend' })
-            setIsDialogOpen(true)
-          }} 
-          variant="outline" 
-          className="border-green-300 text-green-700 hover:bg-green-50"
-        >
-          <CalendarDays className="h-4 w-4 mr-2" />
-          Cài đặt cuối tuần
-        </Button>
-        <Button 
-          onClick={() => {
-            setFormData({ ...formData, type: 'specific' })
-            setIsDialogOpen(true)
-          }} 
-          variant="outline" 
-          className="border-purple-300 text-purple-700 hover:bg-purple-50"
-        >
-          <CalendarDays className="h-4 w-4 mr-2" />
-          Cài đặt ngày cụ thể
-        </Button>
       </div>
 
       {/* Time Slots Table */}
@@ -558,17 +580,11 @@ const TimeSlotsManagement = () => {
                     icon: <CalendarDays className="h-6 w-6 text-purple-600" />,
                     color: "from-purple-50 to-pink-50"
                   }
-                case 'weekend':
+                case 'weekday':
                   return {
-                    title: "Cuối tuần (Thứ 7, Chủ nhật)",
+                    title: "Theo thứ trong tuần",
                     icon: <CalendarDays className="h-6 w-6 text-green-600" />,
                     color: "from-green-50 to-emerald-50"
-                  }
-                case 'allDays':
-                  return {
-                    title: "Tất cả ngày (Thứ 2 - Chủ nhật)",
-                    icon: <Globe className="h-6 w-6 text-blue-600" />,
-                    color: "from-blue-50 to-indigo-50"
                   }
                 default:
                   return {
@@ -710,21 +726,21 @@ const TimeSlotsManagement = () => {
                 </label>
                 
                 <label className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                  formData.type === 'weekend' 
+                  formData.type === 'weekday' 
                     ? 'border-green-500 bg-green-50 text-green-700' 
                     : 'border-gray-300 hover:bg-gray-50'
                 }`}>
                   <input
                     type="radio"
                     name="type"
-                    value="weekend"
-                    checked={formData.type === 'weekend'}
+                    value="weekday"
+                    checked={formData.type === 'weekday'}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                     className="sr-only"
                   />
                   <div className="text-center">
-                    <div className="font-medium">Cuối tuần</div>
-                    <div className="text-xs text-gray-500">Thứ 7, CN</div>
+                    <div className="font-medium">Theo thứ</div>
+                    <div className="text-xs text-gray-500">Chọn một thứ</div>
                   </div>
                 </label>
                 
@@ -749,6 +765,28 @@ const TimeSlotsManagement = () => {
               </div>
             </div>
 
+            {formData.type === 'weekday' && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Chọn thứ
+                </Label>
+                <Select value={String(formData.dayOfWeek)} onValueChange={(v) => setFormData({ ...formData, dayOfWeek: parseInt(v) })}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Thứ 2</SelectItem>
+                    <SelectItem value="2">Thứ 3</SelectItem>
+                    <SelectItem value="3">Thứ 4</SelectItem>
+                    <SelectItem value="4">Thứ 5</SelectItem>
+                    <SelectItem value="5">Thứ 6</SelectItem>
+                    <SelectItem value="6">Thứ 7</SelectItem>
+                    <SelectItem value="0">Chủ nhật</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {formData.type === 'specific' && (
               <div className="space-y-2">
                 <Label htmlFor="specificDate" className="text-sm font-medium text-gray-700">
@@ -766,6 +804,29 @@ const TimeSlotsManagement = () => {
               </div>
             )}
 
+            {/* Toggle closed day */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Chế độ nhận khách</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={formData.closed}
+                  onChange={(e) => {
+                    const closed = e.target.checked
+                    setFormData({
+                      ...formData,
+                      closed,
+                      timeSlots: closed ? '' : formData.timeSlots,
+                      maxBookings: closed ? 0 : Math.max(1, formData.maxBookings)
+                    })
+                  }}
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">Không nhận khách (ẩn khung giờ)</span>
+              </div>
+            </div>
+
+            {!formData.closed && (
             <div className="space-y-2">
               <Label htmlFor="timeSlots" className="text-sm font-medium text-gray-700">
                 Khung giờ (cách nhau bởi dấu phẩy)
@@ -775,13 +836,15 @@ const TimeSlotsManagement = () => {
                 value={formData.timeSlots}
                 onChange={(e) => setFormData({ ...formData, timeSlots: e.target.value })}
                 placeholder="8:00-9:00,9:00-10:00,10:00-11:00"
-                required
+                // Cho phép để trống để biểu thị không có khung giờ
+                required={false}
                 className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
               <p className="text-xs text-gray-500">
                 Ví dụ: 8:00-9:00,9:00-10:00,10:00-11:00,14:00-15:00,15:00-16:00
               </p>
             </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -791,10 +854,11 @@ const TimeSlotsManagement = () => {
                 <Input
                   id="maxBookings"
                   type="number"
-                  min="1"
+                  min="0"
                   value={formData.maxBookings}
                   onChange={(e) => setFormData({ ...formData, maxBookings: parseInt(e.target.value) })}
-                  required
+                  required={!formData.closed}
+                  disabled={formData.closed}
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>

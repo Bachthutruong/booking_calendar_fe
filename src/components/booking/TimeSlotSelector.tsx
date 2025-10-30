@@ -44,6 +44,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
   }
 
   const timeSlots = timeSlotsData?.data.timeSlots || []
+  const availableSlots = timeSlots.filter((s: TimeSlot) => s.currentBookings < s.maxBookings)
 
   return (
     <div className="max-w-full mx-auto">
@@ -65,14 +66,14 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Time Slots */}
-        <div className="lg:col-span-2">
+      <div>
+        {/* Time Slots - full width */}
+        <div>
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
               <CardTitle className="text-center text-xl text-gray-800">Khung giờ khả dụng</CardTitle>
               <CardDescription className="text-center text-gray-600">
-                {timeSlots.length} khung giờ có sẵn
+                {availableSlots.length} khung giờ có sẵn
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -81,7 +82,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
                   <p className="mt-4 text-gray-600">Đang tải khung giờ...</p>
                 </div>
-              ) : timeSlots.length === 0 ? (
+              ) : availableSlots.length === 0 ? (
                 <div className="text-center py-12">
                   <Clock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-700 mb-2">Không có khung giờ</h3>
@@ -92,107 +93,55 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {timeSlots.map((slot: TimeSlot) => {
-                    const isSelected = selectedTimeSlot === slot.startTime
-                    const isFullyBooked = slot.currentBookings >= slot.maxBookings
-                    
-                    return (
-                      <Button
-                        key={slot.id}
-                        variant={isSelected ? "default" : "outline"}
-                        className={`h-16 flex flex-col items-center justify-center p-4 transition-all duration-200 ${
-                          isFullyBooked 
-                            ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-500 border-gray-200' 
-                            : isSelected 
-                              ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg' 
-                              : 'hover:bg-green-50 hover:border-green-300 border-gray-200'
-                        }`}
-                        disabled={isFullyBooked}
-                        onClick={() => !isFullyBooked && handleTimeSlotSelect(`${slot.startTime}-${slot.endTime}`)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-lg">{formatTimeRange(slot.startTime, slot.endTime)}</span>
-                          {isSelected && <CheckCircle className="h-4 w-4" />}
-                        </div>
-                        <div className="text-xs mt-1">
-                          {isFullyBooked ? (
-                            <span className="text-red-500">Đã đầy</span>
-                          ) : (
-                            <span className="text-gray-500">
-                              {slot.currentBookings}/{slot.maxBookings} đã đặt
-                            </span>
-                          )}
-                        </div>
-                      </Button>
-                    )
-                  })}
+                <div>
+                  <div className="flex flex-wrap gap-3">
+                    {availableSlots.map((slot: TimeSlot) => {
+                      const isSelected = selectedTimeSlot === `${slot.startTime}-${slot.endTime}`
+                      const baseClasses = 'px-4 py-2 rounded-full text-sm border transition-all duration-200'
+                      const selectableClasses = isSelected
+                        ? 'bg-green-600 text-white border-green-700 shadow'
+                        : 'bg-white text-gray-800 border-gray-200 hover:border-green-400 hover:bg-green-50'
+
+                      return (
+                        <button
+                          key={slot.id}
+                          className={`${baseClasses} ${selectableClasses}`}
+                          onClick={() => handleTimeSlotSelect(`${slot.startTime}-${slot.endTime}`)}
+                          aria-pressed={isSelected}
+                        >
+                          <span className="font-semibold mr-2">{formatTimeRange(slot.startTime, slot.endTime)}</span>
+                          {isSelected && <CheckCircle className="inline h-4 w-4 ml-1" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
+                    <Button 
+                      onClick={handleNext} 
+                      disabled={!selectedTimeSlot}
+                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                    >
+                      Tiếp tục
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={onBack}
+                      className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Chọn ngày khác
+                    </Button>
+                    {selectedTimeSlot && (
+                      <span className="text-sm text-gray-600">
+                        Đã chọn: <span className="font-semibold text-gray-800">{selectedTimeSlot.includes('-') ? selectedTimeSlot.split('-').map(t => formatTime(t.trim())).join(' - ') : formatTime(selectedTimeSlot)}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Selection Summary & Actions */}
-        <div className="space-y-6">
-          {selectedTimeSlot ? (
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-emerald-50">
-              <CardHeader>
-                <CardTitle className="text-center text-green-800 flex items-center justify-center">
-                  <Clock className="h-5 w-5 mr-2" />
-                  Khung giờ đã chọn
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <p className="text-2xl font-bold text-gray-900 mb-2">
-                    {selectedTimeSlot.includes('-') ? selectedTimeSlot.split('-').map(t => formatTime(t.trim())).join(' - ') : formatTime(selectedTimeSlot)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(selectedDate).toLocaleDateString('vi-VN')}
-                  </p>
-                </div>
-                
-                <div className="flex flex-col gap-3">
-                  <Button 
-                    onClick={handleNext} 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                  >
-                    Tiếp tục
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={onBack}
-                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Chọn ngày khác
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <CardContent className="text-center py-8">
-                <Clock className="h-16 w-16 text-blue-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Chưa chọn giờ</h3>
-                <p className="text-gray-600">
-                  Vui lòng chọn một khung giờ từ danh sách bên trái
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Help Text */}
-          <Card className="border-0 bg-gray-50">
-            <CardContent className="p-4">
-              <h4 className="font-semibold text-gray-800 mb-2">💡 Lưu ý:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Chọn khung giờ phù hợp với lịch trình</li>
-                <li>• Có thể thay đổi lựa chọn bất kỳ lúc nào</li>
-                <li>• Số lượng đặt lịch có giới hạn cho mỗi khung giờ</li>
-              </ul>
             </CardContent>
           </Card>
         </div>

@@ -6,6 +6,7 @@ import CustomFieldsManagement from '@/components/admin/CustomFieldsManagement'
 import UsersManagement from '@/components/admin/UsersManagement'
 import DashboardOverview from '@/components/admin/DashboardOverview'
 import SystemConfigManagement from '@/components/admin/SystemConfigManagement'
+import SuccessPageConfig from '@/components/admin/SuccessPageConfig'
 
 const AdminDashboard = () => {
   return (
@@ -22,6 +23,7 @@ const AdminDashboard = () => {
             <Route path="/custom-fields" element={<CustomFieldsManagement />} />
             <Route path="/users" element={<UsersManagement />} />
             <Route path="/system-config" element={<SystemConfigManagement />} />
+            <Route path="/success-page" element={<SuccessPageConfig />} />
           </Routes>
         </div>
       </div>

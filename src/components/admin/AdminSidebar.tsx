@@ -9,7 +9,8 @@ import {
   Clock,
   FormInput,
   User,
-  Globe
+  Globe,
+  CheckCircle2
 } from 'lucide-react'
 
 const AdminSidebar = () => {
@@ -23,6 +24,7 @@ const AdminSidebar = () => {
     { id: 'time-slots', label: 'Khung giờ', icon: Clock, path: '/admin/time-slots' },
     { id: 'custom-fields', label: 'Trường tùy chỉnh', icon: FormInput, path: '/admin/custom-fields' },
     { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/admin/users' },
+    { id: 'success-page', label: 'Trang thành công', icon: CheckCircle2, path: '/admin/success-page' },
     { id: 'system-config', label: 'Cấu hình hệ thống', icon: Globe, path: '/admin/system-config' },
   ]
 
@@ -37,6 +39,7 @@ const AdminSidebar = () => {
     if (path.includes('/time-slots')) return 'time-slots'
     if (path.includes('/custom-fields')) return 'custom-fields'
     if (path.includes('/users')) return 'users'
+    if (path.includes('/success-page')) return 'success-page'
     if (path.includes('/system-config')) return 'system-config'
     return 'overview'
   }

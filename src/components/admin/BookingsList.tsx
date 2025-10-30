@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 import { api } from '@/lib/api'
 import { Calendar, Clock, User, Mail, Phone, Search, X, Eye, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
-interface Booking {
+interface AdminBooking {
   _id: string
   customerName: string
   customerEmail: string
@@ -26,19 +26,21 @@ interface Booking {
   }>
   notes?: string
   createdAt: string
-  cancelledBy?: string
   cancelledAt?: string
   cancellationReason?: string
+  cancelledBy?: string | { _id?: string; name?: string; email?: string }
 }
 
 const BookingsList = () => {
   const { toast } = useToast()
-  const [bookings, setBookings] = useState<Booking[]>([])
+  const [bookings, setBookings] = useState<AdminBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [statusFilter, setStatusFilter] = useState('confirmed')
+  const [rangeFilter, setRangeFilter] = useState<'last7' | 'all'>('last7')
   const [dateFilter, setDateFilter] = useState('')
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
@@ -56,7 +58,16 @@ const BookingsList = () => {
 
   useEffect(() => {
     fetchBookings()
-  }, [searchTerm, statusFilter, dateFilter, currentPage, pageSize])
+  }, [searchTerm, statusFilter, dateFilter, currentPage, pageSize, rangeFilter])
+
+  // Debounce search input -> query param
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearchTerm(searchInput)
+      setCurrentPage(1)
+    }, 400)
+    return () => clearTimeout(t)
+  }, [searchInput])
 
   useEffect(() => {
     // Load custom field definitions for labels (admin endpoint)
@@ -85,12 +96,14 @@ const BookingsList = () => {
       const params = new URLSearchParams()
       if (searchTerm) params.append('search', searchTerm)
       if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter)
+      params.append('range', rangeFilter)
       if (dateFilter) params.append('date', dateFilter)
       params.append('page', currentPage.toString())
       params.append('limit', pageSize.toString())
       
       const response = await api.get(`/bookings?${params.toString()}`)
-      setBookings(response.data.bookings || [])
+      let items: AdminBooking[] = response.data.bookings || []
+      setBookings(items)
       
       // Update pagination info
       if (response.data.pagination) {
@@ -109,7 +122,7 @@ const BookingsList = () => {
     }
   }
 
-  const getCustomFieldValueByName = (booking: Booking, fieldName: string) => {
+  const getCustomFieldValueByName = (booking: AdminBooking, fieldName: string) => {
     const match = booking.customFields?.find((f) => {
       const cfgName = customFieldNamesById[f.fieldId]
       return (f as any).fieldName === fieldName || cfgName === fieldName
@@ -117,11 +130,11 @@ const BookingsList = () => {
     return match?.value ?? ''
   }
 
-  const getDisplayName = (booking: Booking) => {
+  const getDisplayName = (booking: AdminBooking) => {
     return getCustomFieldValueByName(booking, 'user_name') || booking.customerName || ''
   }
 
-  const getDisplayEmail = (booking: Booking) => {
+  const getDisplayEmail = (booking: AdminBooking) => {
     return getCustomFieldValueByName(booking, 'email') || booking.customerEmail || ''
   }
 
@@ -188,6 +201,16 @@ const BookingsList = () => {
     setCurrentPage(1) // Reset to first page when changing page size
   }
 
+  const switchRange = (range: 'last7' | 'all') => {
+    setRangeFilter(range)
+    // Reset pagination and filters appropriately
+    setCurrentPage(1)
+    if (range === 'last7') {
+      // Force confirmed in last7 view
+      setStatusFilter('confirmed')
+    }
+  }
+
   const resetFilters = () => {
     setSearchTerm('')
     setStatusFilter('')
@@ -195,7 +218,7 @@ const BookingsList = () => {
     setCurrentPage(1)
   }
 
-  const handleConfirmAction = (booking: Booking, action: 'confirm' | 'cancel') => {
+  const handleConfirmAction = (booking: AdminBooking, action: 'confirm' | 'cancel') => {
     setSelectedBooking(booking)
     if (action === 'confirm') {
       setShowConfirmDialog(true)
@@ -244,6 +267,7 @@ const BookingsList = () => {
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Xem và quản lý tất cả đặt lịch tư vấn của khách hàng
         </p>
+        
       </div>
 
       {/* Filters */}
@@ -252,34 +276,20 @@ const BookingsList = () => {
           <CardTitle className="text-xl text-gray-800">Bộ lọc tìm kiếm</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid md:grid-cols-5 gap-6">
+          <div className="grid md:grid-cols-4 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Tên, email khách hàng..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Trạng thái</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="border-gray-300 focus:border-orange-500 focus:ring-orange-500">
-                  <SelectValue placeholder="Tất cả trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                  <SelectItem value="pending">Chờ xác nhận</SelectItem>
-                  <SelectItem value="confirmed">Đã xác nhận</SelectItem>
-                  <SelectItem value="cancelled">Đã hủy</SelectItem>
-                  <SelectItem value="completed">Hoàn thành</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Ngày</label>
               <Input
@@ -323,9 +333,44 @@ const BookingsList = () => {
         <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 rounded-t-lg">
           <div className="text-center">
             <CardTitle className="text-xl text-gray-800">Danh sách đặt lịch</CardTitle>
-            <CardDescription className="text-gray-600">
-              {totalItems} đặt lịch được tìm thấy - Trang {currentPage} / {totalPages}
-            </CardDescription>
+            <div className="mt-1 flex flex-col items-start justify-start gap-2 text-gray-600">
+              {/* Row 1: Range badges */}
+              <div className="inline-flex items-start justify-start gap-2">
+                <button
+                  type="button"
+                  onClick={() => switchRange('last7')}
+                  className={`px-3 py-1 rounded-full text-xs border ${rangeFilter === 'last7' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                >
+                  7 ngày gần đây
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchRange('all')}
+                  className={`px-3 py-1 rounded-full text-xs border ${rangeFilter === 'all' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                >
+                  Tất cả
+                </button>
+              </div>
+              {/* Row 2: Status badges */}
+              <div className="inline-flex items-center gap-2">
+                {[
+                  { key: 'all', label: 'Tất cả' },
+                  { key: 'pending', label: 'Chờ xác nhận' },
+                  { key: 'confirmed', label: 'Đã xác nhận' },
+                  { key: 'cancelled', label: 'Đã hủy' },
+                  { key: 'completed', label: 'Hoàn thành' },
+                ].map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => { setStatusFilter(s.key as any); setCurrentPage(1); }}
+                    className={`px-3 py-1 rounded-full text-xs border ${statusFilter === s.key ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-6">
@@ -335,10 +380,10 @@ const BookingsList = () => {
               <p className="mt-4 text-gray-600">Đang tải danh sách đặt lịch...</p>
             </div>
           ) : bookings.length === 0 ? (
-            <div className="text-center py-12">
+              <div className="text-center py-12">
               <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-700 mb-2">Không có đặt lịch</h3>
-              <p className="text-gray-500">Không tìm thấy đặt lịch nào phù hợp với bộ lọc</p>
+                <p className="text-gray-500">Không tìm thấy đặt lịch nào phù hợp với bộ lọc</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -469,8 +514,11 @@ const BookingsList = () => {
               {/* Pagination */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="text-sm text-gray-600">
-                  Hiển thị {((currentPage - 1) * pageSize) + 1} đến {Math.min(currentPage * pageSize, totalItems)} trong tổng số {totalItems} kết quả
+                  {rangeFilter === 'last7'
+                    ? `Tổng ${totalItems} kết quả trong 7 ngày gần đây (đã xác nhận)`
+                    : `Hiển thị ${((currentPage - 1) * pageSize) + 1} đến ${Math.min(currentPage * pageSize, totalItems)} trong tổng số ${totalItems} kết quả`}
                 </div>
+                {rangeFilter === 'last7' ? null : (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -537,6 +585,7 @@ const BookingsList = () => {
                     <ChevronsRight className="h-4 w-4" />
                   </Button>
                 </div>
+                )}
               </div>
             </div>
           )}
@@ -620,15 +669,28 @@ const BookingsList = () => {
                 </div>
               )}
 
-              {selectedBooking.status === 'cancelled' && selectedBooking.cancellationReason && (
+              {selectedBooking.status === 'cancelled' && (
                 <div className="p-4 bg-red-50 rounded-lg">
                   <h3 className="text-lg font-semibold text-red-700 mb-2">Lý do hủy</h3>
-                  <p className="text-red-600">{selectedBooking.cancellationReason}</p>
-                  {selectedBooking.cancelledAt && (
-                    <p className="text-sm text-red-500 mt-2">
-                      Hủy lúc: {new Date(selectedBooking.cancelledAt).toLocaleString('vi-VN')}
-                    </p>
+                  {selectedBooking.cancellationReason ? (
+                    <p className="text-red-600">{selectedBooking.cancellationReason}</p>
+                  ) : (
+                    <p className="text-red-600">Không có lý do</p>
                   )}
+                  <div className="text-sm text-red-500 mt-2 space-y-1">
+                    {selectedBooking.cancelledAt && (
+                      <p>Hủy lúc: {new Date(selectedBooking.cancelledAt).toLocaleString('vi-VN')}</p>
+                    )}
+                    {selectedBooking.cancelledBy && (
+                      <p>
+                        Người hủy: {
+                          typeof selectedBooking.cancelledBy === 'string'
+                            ? selectedBooking.cancelledBy
+                            : `${selectedBooking.cancelledBy.name || 'N/A'}${selectedBooking.cancelledBy.email ? ` (${selectedBooking.cancelledBy.email})` : ''}`
+                        }
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 

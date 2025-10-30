@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Footer from '@/components/common/Footer'
+import { api } from '@/lib/api'
 import { 
   Calendar, 
   Clock, 
@@ -17,6 +19,21 @@ import {
 
 const HomePage = () => {
   const navigate = useNavigate()
+  const [footerConfig, setFooterConfig] = useState<any | null>(null)
+  const [generalConfig, setGeneralConfig] = useState<any | null>(null)
+
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const res = await api.get('/system-config')
+        setFooterConfig(res.data.configs?.footer || null)
+        setGeneralConfig(res.data.configs?.general || null)
+      } catch (e) {
+        // ignore, UI will fallback to defaults
+      }
+    }
+    fetchConfigs()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -29,8 +46,8 @@ const HomePage = () => {
                 <Calendar className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Booking Calendar</h1>
-                <p className="text-xs text-gray-500">Hệ thống đặt lịch thông minh</p>
+                <h1 className="text-lg font-bold text-gray-900">{generalConfig?.siteName || 'Booking Calendar'}</h1>
+                <p className="text-xs text-gray-500">{generalConfig?.siteDescription || 'Hệ thống đặt lịch thông minh'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -61,11 +78,11 @@ const HomePage = () => {
             <Calendar className="h-6 w-6 text-blue-600" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-            Đặt lịch tư vấn
-            <span className="text-blue-600 block">dễ dàng</span>
+            {generalConfig?.siteName || 'Đặt lịch tư vấn'}
+            <span className="text-blue-600 block">{generalConfig?.siteDescription || 'dễ dàng'}</span>
           </h2>
           <p className="text-base text-gray-600 mb-6 max-w-xl mx-auto leading-relaxed">
-            Chọn thời gian phù hợp và đặt lịch tư vấn với chuyên gia của chúng tôi. 
+            Chọn thời gian phù hợp và đặt lịch tư vấn với chuyên gia của chúng tôi.
             Quy trình đơn giản, nhanh chóng và hoàn toàn miễn phí.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -81,7 +98,7 @@ const HomePage = () => {
               className="px-5 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
             >
               <Phone className="mr-2 h-4 w-4" />
-              Liên hệ: 0123 456 789
+              Liên hệ: {footerConfig?.phone || '0123 456 789'}
             </Button>
           </div>
         </div>
@@ -201,7 +218,14 @@ const HomePage = () => {
         </div>
       </main>
 
-      <Footer />
+      <Footer 
+        companyName={footerConfig?.companyName}
+        companyDescription={footerConfig?.companyDescription}
+        email={footerConfig?.email}
+        phone={footerConfig?.phone}
+        address={footerConfig?.address}
+        support={footerConfig?.support}
+      />
     </div>
   )
 }

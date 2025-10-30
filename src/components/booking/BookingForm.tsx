@@ -68,12 +68,17 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
       timeSlot: selectedTimeSlot.split('-')[0] // Extract startTime from "startTime-endTime" format
     }),
     {
-      onSuccess: () => {
+      onSuccess: (res) => {
         toast({
           title: "Thành công",
           description: "Đặt lịch thành công! Chúng tôi sẽ liên hệ lại với bạn.",
         })
-        navigate('/')
+        const id = res.data?.booking?._id
+        if (id) {
+          navigate(`/booking/success?bookingId=${id}`)
+        } else {
+          navigate('/')
+        }
       },
       onError: (error: any) => {
         toast({
@@ -325,54 +330,36 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Booking Summary */}
-        <div className="lg:col-span-1">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-purple-50 to-indigo-50 sticky top-4">
-            <CardHeader>
-              <CardTitle className="text-center text-purple-800 flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Thông tin đặt lịch
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="flex items-center justify-center mb-3">
-                  <div className="bg-blue-100 rounded-full p-2 mr-3">
-                    <Calendar className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">Ngày</p>
-                    <p className="text-sm text-gray-600">{formatDate(selectedDate)}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-center">
-                  <div className="bg-green-100 rounded-full p-2 mr-3">
-                    <Clock className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">Giờ</p>
-                    <p className="text-sm text-gray-600">{formatTime(selectedTimeSlot)}</p>
-                  </div>
-                </div>
+      <div className="space-y-6">
+        {/* Booking Summary - compact badges on top */}
+        <div className="bg-white/90 backdrop-blur-sm border rounded-lg p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm bg-blue-50 border-blue-200 text-blue-700">
+              <Calendar className="h-4 w-4" />
+              <span>{formatDate(selectedDate)}</span>
+            </div>
+            {selectedTimeSlot && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm bg-green-50 border-green-200 text-green-700">
+                <Clock className="h-4 w-4" />
+                <span>{selectedTimeSlot.includes('-') ? selectedTimeSlot.split('-').map(t => formatTime(t.trim())).join(' - ') : formatTime(selectedTimeSlot)}</span>
               </div>
-              
+            )}
+            <div className="ml-auto w-full sm:w-auto">
               <Button 
                 type="button" 
                 variant="outline"
                 onClick={onBack}
-                className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Chọn lại thời gian
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Form */}
-        <div className="lg:col-span-2">
+        <div>
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-t-lg">
               <CardTitle className="text-center text-xl text-gray-800">Thông tin cá nhân</CardTitle>
