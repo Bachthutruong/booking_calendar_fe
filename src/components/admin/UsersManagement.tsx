@@ -71,14 +71,14 @@ const UsersManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('users')
-        toast({ title: "Thành công", description: "Tạo người dùng thành công" })
+        toast({ title: "成功", description: "建立用戶成功" })
         setIsDialogOpen(false)
         resetForm()
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -90,15 +90,15 @@ const UsersManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('users')
-        toast({ title: "Thành công", description: "Cập nhật người dùng thành công" })
+        toast({ title: "成功", description: "更新用戶成功" })
         setEditingUser(null)
         setIsDialogOpen(false)
         resetForm()
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -110,14 +110,14 @@ const UsersManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['users', currentPage, pageSize, searchTerm, roleFilter])
-        toast({ title: "Thành công", description: "Xóa người dùng thành công" })
+        toast({ title: "成功", description: "刪除用戶成功" })
         setShowDeleteDialog(false)
         setUserToDelete(null)
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -143,11 +143,11 @@ const UsersManagement = () => {
       // If password provided, validate confirm and min length
       if (formData.password) {
         if (formData.password.length < 6) {
-          toast({ title: 'Lỗi', description: 'Mật khẩu tối thiểu 6 ký tự', variant: 'destructive' })
+          toast({ title: '錯誤', description: '密碼至少需 6 個字元', variant: 'destructive' })
           return
         }
         if (formData.password !== confirmPassword) {
-          toast({ title: 'Lỗi', description: 'Xác nhận mật khẩu không khớp', variant: 'destructive' })
+          toast({ title: '錯誤', description: '確認密碼不一致', variant: 'destructive' })
           return
         }
       }
@@ -240,25 +240,25 @@ const UsersManagement = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
           <Users className="h-8 w-8 text-green-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Quản lý người dùng</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">用戶管理</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Quản lý quản trị viên, nhân viên và khách hàng trong hệ thống
+          管理系統中的管理員、員工與客戶
         </p>
       </div>
 
       {/* Filters */}
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
-          <CardTitle className="text-xl text-gray-800">Bộ lọc tìm kiếm</CardTitle>
+          <CardTitle className="text-xl text-gray-800">搜尋篩選</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
+              <label className="text-sm font-medium text-gray-700">搜尋</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Tên, email người dùng..."
+                  placeholder="姓名、用戶 Email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 border-gray-300 focus:border-green-500 focus:ring-green-500"
@@ -266,20 +266,20 @@ const UsersManagement = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Vai trò</label>
+              <label className="text-sm font-medium text-gray-700">角色</label>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="border-gray-300 focus:border-green-500 focus:ring-green-500">
-                  <SelectValue placeholder="Tất cả vai trò" />
+                  <SelectValue placeholder="所有角色" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả vai trò</SelectItem>
-                  <SelectItem value="admin">Quản trị viên</SelectItem>
-                  <SelectItem value="staff">Nhân viên</SelectItem>
+                  <SelectItem value="all">所有角色</SelectItem>
+                  <SelectItem value="admin">管理員</SelectItem>
+                  <SelectItem value="staff">員工</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Số lượng hiển thị</label>
+              <label className="text-sm font-medium text-gray-700">每頁顯示數量</label>
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                 <SelectTrigger className="border-gray-300 focus:border-green-500 focus:ring-green-500">
                   <SelectValue />
@@ -300,7 +300,7 @@ const UsersManagement = () => {
                 className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 <X className="h-4 w-4 mr-2" />
-                Xóa bộ lọc
+                清除篩選
               </Button>
             </div>
           </div>
@@ -311,7 +311,7 @@ const UsersManagement = () => {
       <div className="flex justify-center gap-4">
         <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700">
           <UserPlus className="h-4 w-4 mr-2" />
-          Tạo người dùng mới
+          建立新用戶
         </Button>
       </div>
 
@@ -319,9 +319,9 @@ const UsersManagement = () => {
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
           <div className="text-center">
-            <CardTitle className="text-xl text-gray-800">Danh sách người dùng</CardTitle>
+            <CardTitle className="text-xl text-gray-800">用戶列表</CardTitle>
             <CardDescription className="text-gray-600">
-              {totalItems} người dùng được tìm thấy - Trang {currentPage} / {totalPages}
+              {totalItems} 位用戶 - 第 {currentPage} / {totalPages} 頁
             </CardDescription>
           </div>
         </CardHeader>
@@ -329,16 +329,16 @@ const UsersManagement = () => {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Đang tải danh sách người dùng...</p>
+              <p className="mt-4 text-gray-600">正在載入用戶列表...</p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12">
               <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Không có người dùng</h3>
-              <p className="text-gray-500 mb-4">Không tìm thấy người dùng nào phù hợp với bộ lọc</p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">沒有用戶</h3>
+              <p className="text-gray-500 mb-4">找不到符合篩選條件的用戶</p>
               <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700">
                 <UserPlus className="h-4 w-4 mr-2" />
-                Tạo người dùng đầu tiên
+                建立第一位用戶
               </Button>
             </div>
           ) : (
@@ -346,12 +346,12 @@ const UsersManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[200px]">Người dùng</TableHead>
-                    <TableHead className="w-[150px]">Liên hệ</TableHead>
-                    <TableHead className="w-[120px]">Vai trò</TableHead>
-                    <TableHead className="w-[100px]">Trạng thái</TableHead>
-                    <TableHead className="w-[120px]">Ngày tạo</TableHead>
-                    <TableHead className="w-[150px]">Thao tác</TableHead>
+                    <TableHead className="w-[200px]">用戶</TableHead>
+                    <TableHead className="w-[150px]">聯絡方式</TableHead>
+                    <TableHead className="w-[120px]">角色</TableHead>
+                    <TableHead className="w-[100px]">狀態</TableHead>
+                    <TableHead className="w-[120px]">建立日期</TableHead>
+                    <TableHead className="w-[150px]">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -390,8 +390,8 @@ const UsersManagement = () => {
                           user.role === 'admin' ? 'bg-red-100 text-red-700' :
                           user.role === 'staff' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {user.role === 'admin' ? 'Quản trị viên' :
-                           user.role === 'staff' ? 'Nhân viên' : 'Khách hàng'}
+                          {user.role === 'admin' ? '管理員' :
+                           user.role === 'staff' ? '員工' : '客戶'}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -400,12 +400,12 @@ const UsersManagement = () => {
                             ? 'bg-green-100 text-green-700' 
                             : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {user.isActive ? 'Hoạt động' : 'Tạm dừng'}
+                          {user.isActive ? '啟用' : '停用'}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-gray-600">
-                          {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                          {new Date(user.createdAt).toLocaleDateString('zh-TW')}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -436,7 +436,7 @@ const UsersManagement = () => {
               {/* Pagination */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="text-sm text-gray-600">
-                  Hiển thị {((currentPage - 1) * pageSize) + 1} đến {Math.min(currentPage * pageSize, totalItems)} trong tổng số {totalItems} kết quả
+                  顯示第 {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalItems)} 筆／共 {totalItems} 筆
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -515,7 +515,7 @@ const UsersManagement = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {editingUser ? 'Chỉnh sửa người dùng' : 'Tạo người dùng mới'}
+              {editingUser ? '編輯用戶' : '建立新用戶'}
             </DialogTitle>
           </DialogHeader>
           
@@ -537,7 +537,7 @@ const UsersManagement = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Họ và tên
+                  姓名
                 </Label>
                 <Input
                   id="name"
@@ -552,7 +552,7 @@ const UsersManagement = () => {
             {!editingUser ? (
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Mật khẩu
+                  密碼
                 </Label>
                 <Input
                   id="password"
@@ -563,13 +563,13 @@ const UsersManagement = () => {
                   minLength={6}
                   className="border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
-                <p className="text-xs text-gray-500">Tối thiểu 6 ký tự</p>
+                <p className="text-xs text-gray-500">至少 6 個字元</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="new-password" className="text-sm font-medium text-gray-700">
-                    Mật khẩu mới (tuỳ chọn)
+                    新密碼（可選）
                   </Label>
                   <Input
                     id="new-password"
@@ -577,20 +577,20 @@ const UsersManagement = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     minLength={6}
-                    placeholder="Để trống nếu không đổi"
+                    placeholder="若不更改請留空"
                     className="border-gray-300 focus:border-green-500 focus:ring-green-500"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">
-                    Xác nhận mật khẩu
+                    確認密碼
                   </Label>
                   <Input
                     id="confirm-password"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Nhập lại mật khẩu mới"
+                    placeholder="再次輸入新密碼"
                     className="border-gray-300 focus:border-green-500 focus:ring-green-500"
                   />
                 </div>
@@ -600,7 +600,7 @@ const UsersManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="role" className="text-sm font-medium text-gray-700">
-                  Vai trò
+                  角色
                 </Label>
                 <select
                   id="role"
@@ -608,14 +608,14 @@ const UsersManagement = () => {
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
                 >
-                  <option value="staff">Nhân viên</option>
-                  <option value="admin">Quản trị viên</option>
+                  <option value="staff">員工</option>
+                  <option value="admin">管理員</option>
                 </select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                  Số điện thoại
+                  電話
                 </Label>
                 <Input
                   id="phone"
@@ -635,7 +635,7 @@ const UsersManagement = () => {
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">Kích hoạt tài khoản</span>
+                <span className="text-sm text-gray-700">啟用帳戶</span>
               </label>
             </div>
 
@@ -646,7 +646,7 @@ const UsersManagement = () => {
                 onClick={() => setIsDialogOpen(false)}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
-                Hủy
+                取消
               </Button>
               <Button 
                 type="submit" 
@@ -656,10 +656,10 @@ const UsersManagement = () => {
                 {createMutation.isLoading || updateMutation.isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang xử lý...
+                    處理中...
                   </>
                 ) : (
-                  editingUser ? 'Cập nhật' : 'Tạo mới'
+                  editingUser ? '更新' : '建立'
                 )}
               </Button>
             </div>
@@ -671,7 +671,7 @@ const UsersManagement = () => {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Xác nhận xóa người dùng</DialogTitle>
+            <DialogTitle className="text-xl font-bold">確認刪除用戶</DialogTitle>
           </DialogHeader>
           
           {userToDelete && (
@@ -679,26 +679,26 @@ const UsersManagement = () => {
               <div className="p-4 bg-red-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertCircle className="h-5 w-5 text-red-600" />
-                  <span className="font-medium text-red-800">Cảnh báo</span>
+                  <span className="font-medium text-red-800">警告</span>
                 </div>
                 <p className="text-red-700">
-                  Bạn có chắc chắn muốn xóa người dùng <strong>{userToDelete.name}</strong>?
+                  您確定要刪除用戶 <strong>{userToDelete.name}</strong>？
                 </p>
                 <p className="text-sm text-red-600 mt-2">
-                  Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
+                  此操作無法復原，將永久刪除所有相關資料。
                 </p>
               </div>
               
               <div className="p-3 bg-gray-50 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Thông tin người dùng:</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">用戶資訊：</h4>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <div><strong>Tên:</strong> {userToDelete.name}</div>
+                  <div><strong>姓名：</strong> {userToDelete.name}</div>
                   <div><strong>Email:</strong> {userToDelete.email}</div>
-                  <div><strong>Vai trò:</strong> {
-                    userToDelete.role === 'admin' ? 'Quản trị viên' :
-                    userToDelete.role === 'staff' ? 'Nhân viên' : 'Khách hàng'
+                  <div><strong>角色：</strong> {
+                    userToDelete.role === 'admin' ? '管理員' :
+                    userToDelete.role === 'staff' ? '員工' : '客戶'
                   }</div>
-                  <div><strong>Trạng thái:</strong> {userToDelete.isActive ? 'Hoạt động' : 'Tạm dừng'}</div>
+                  <div><strong>狀態：</strong> {userToDelete.isActive ? '啟用' : '停用'}</div>
                 </div>
               </div>
               
@@ -711,7 +711,7 @@ const UsersManagement = () => {
                   }}
                   className="border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
-                  Hủy
+                  取消
                 </Button>
                 <Button
                   onClick={confirmDelete}
@@ -721,10 +721,10 @@ const UsersManagement = () => {
                   {deleteMutation.isLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Đang xóa...
+                      刪除中...
                     </>
                   ) : (
-                    'Xác nhận xóa'
+                    '確認刪除'
                   )}
                 </Button>
               </div>

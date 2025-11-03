@@ -19,13 +19,13 @@ const AdminSidebar = () => {
   const { user, logout } = useAuth()
 
   const menuItems = [
-    { id: 'overview', label: 'Tổng quan', icon: BarChart3, path: '/admin/dashboard' },
-    { id: 'bookings', label: 'Quản lý đặt lịch', icon: Calendar, path: '/admin/bookings' },
-    { id: 'time-slots', label: 'Khung giờ', icon: Clock, path: '/admin/time-slots' },
-    { id: 'custom-fields', label: 'Trường tùy chỉnh', icon: FormInput, path: '/admin/custom-fields' },
-    { id: 'users', label: 'Quản lý người dùng', icon: Users, path: '/admin/users' },
-    { id: 'success-page', label: 'Trang thành công', icon: CheckCircle2, path: '/admin/success-page' },
-    { id: 'system-config', label: 'Cấu hình hệ thống', icon: Globe, path: '/admin/system-config' },
+    { id: 'overview', label: '總覽', icon: BarChart3, path: '/admin/dashboard' },
+    { id: 'bookings', label: '預約管理', icon: Calendar, path: '/admin/bookings' },
+    { id: 'time-slots', label: '時段', icon: Clock, path: '/admin/time-slots' },
+    { id: 'custom-fields', label: '自訂欄位', icon: FormInput, path: '/admin/custom-fields' },
+    { id: 'users', label: '用戶管理', icon: Users, path: '/admin/users' },
+    { id: 'success-page', label: '成功頁面', icon: CheckCircle2, path: '/admin/success-page' },
+    { id: 'system-config', label: '系統設定', icon: Globe, path: '/admin/system-config' },
   ]
 
   const handleLogout = () => {
@@ -55,7 +55,7 @@ const AdminSidebar = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-              <p className="text-sm text-white/80">Quản lý hệ thống</p>
+              <p className="text-sm text-white/80">系統管理</p>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ const AdminSidebar = () => {
               <p className="text-sm font-medium text-gray-900">{user?.name}</p>
               <p className="text-xs text-gray-500">{user?.email}</p>
               <span className="inline-block px-2 py-1 text-xs bg-primary/10 text-primary rounded-full mt-1">
-                {user?.role === 'admin' ? 'Quản trị viên' : 'Nhân viên'}
+                {user?.role === 'admin' ? '管理員' : '員工'}
               </span>
             </div>
           </div>
@@ -105,7 +105,7 @@ const AdminSidebar = () => {
             className="w-full hover:bg-red-50 hover:text-red-600 hover:border-red-200"
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Đăng xuất
+            登出
           </Button>
         </div>
       </div>

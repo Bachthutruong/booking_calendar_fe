@@ -58,20 +58,20 @@ const DashboardOverview = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold">Tổng quan hệ thống</h2>
-        <p className="text-gray-600">Thống kê và thông tin tổng quan về hệ thống đặt lịch</p>
+        <p className="text-gray-600">預約系統的統計與總覽資訊</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng đặt lịch</CardTitle>
+            <CardTitle className="text-sm font-medium">總預約數</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalBookings}</div>
             <p className="text-xs text-muted-foreground">
-              Tất cả đặt lịch trong hệ thống
+              系統中的所有預約
             </p>
           </CardContent>
         </Card>
@@ -84,27 +84,27 @@ const DashboardOverview = () => {
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{stats.pendingBookings}</div>
             <p className="text-xs text-muted-foreground">
-              Đặt lịch chờ xác nhận
+              待確認的預約
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Đã xác nhận</CardTitle>
+            <CardTitle className="text-sm font-medium">已確認</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.confirmedBookings}</div>
             <p className="text-xs text-muted-foreground">
-              Đặt lịch đã xác nhận
+              已確認的預約
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Khung giờ</CardTitle>
+            <CardTitle className="text-sm font-medium">時段</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -119,14 +119,14 @@ const DashboardOverview = () => {
       {/* Recent Bookings */}
       <Card>
         <CardHeader>
-          <CardTitle>Đặt lịch gần đây</CardTitle>
+          <CardTitle>最近預約</CardTitle>
           <CardDescription>
-            Danh sách các đặt lịch mới nhất
+            最新的預約清單
           </CardDescription>
         </CardHeader>
         <CardContent>
           {bookings.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">Chưa có đặt lịch nào</p>
+            <p className="text-center text-gray-500 py-8">尚無預約</p>
           ) : (
             <div className="space-y-4">
               {bookings.slice(0, 5).map((booking: any) => (
@@ -135,7 +135,7 @@ const DashboardOverview = () => {
                     <p className="font-medium">{getDisplayName(booking) || '—'}</p>
                     <p className="text-sm text-gray-600">{getDisplayEmail(booking) || '—'}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(booking.bookingDate).toLocaleDateString('vi-VN')} - {booking.timeSlot}
+                      {new Date(booking.bookingDate).toLocaleDateString('zh-TW')} - {booking.timeSlot}
                     </p>
                   </div>
                   <div className="text-right">
@@ -145,8 +145,8 @@ const DashboardOverview = () => {
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {booking.status === 'pending' ? 'Chờ xác nhận' :
-                       booking.status === 'confirmed' ? 'Đã xác nhận' :
-                       booking.status === 'cancelled' ? 'Đã hủy' : 'Hoàn thành'}
+                       booking.status === 'confirmed' ? '已確認' :
+                       booking.status === 'cancelled' ? '已取消' : '已完成'}
                     </span>
                   </div>
                 </div>

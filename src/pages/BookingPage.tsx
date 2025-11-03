@@ -42,11 +42,11 @@ const BookingPage = () => {
   const getStepInfo = () => {
     switch (step) {
       case 'date':
-        return { title: 'Chọn ngày', icon: Calendar, description: 'Chọn ngày bạn muốn đặt lịch' }
+        return { title: '選擇日期', icon: Calendar, description: '選擇您要預約的日期' }
       case 'time':
-        return { title: 'Chọn giờ', icon: Clock, description: 'Chọn khung giờ phù hợp' }
+        return { title: '選擇時間', icon: Clock, description: '選擇合適的時段' }
       case 'form':
-        return { title: 'Thông tin', icon: User, description: 'Điền thông tin liên hệ' }
+        return { title: '資訊', icon: User, description: '填寫聯絡資訊' }
       default:
         return { title: '', icon: Calendar, description: '' }
     }
@@ -63,7 +63,7 @@ const BookingPage = () => {
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm bg-blue-50 border-blue-200 text-blue-700">
               <Calendar className="h-4 w-4" />
-              <span>{new Date(selectedDate).toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>{new Date(selectedDate).toLocaleDateString('zh-TW', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
             </div>
             {selectedTimeSlot && (
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm bg-green-50 border-green-200 text-green-700">
@@ -122,7 +122,7 @@ const BookingPage = () => {
                 className="text-gray-600 hover:text-gray-900 px-3 py-1.5"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Trang chủ
+                首頁
               </Button>
               <div className="flex items-center space-x-2">
                 <div className="bg-blue-600 rounded-lg p-1.5">
@@ -149,7 +149,7 @@ const BookingPage = () => {
               }`}>
                 1
               </div>
-              <span className="text-xs text-gray-600">Chọn ngày</span>
+              <span className="text-xs text-gray-600">選擇日期</span>
             </div>
             
             <div className={`w-8 h-0.5 rounded-full transition-all duration-300 ${
@@ -163,7 +163,7 @@ const BookingPage = () => {
               }`}>
                 2
               </div>
-              <span className="text-xs text-gray-600">Chọn giờ</span>
+              <span className="text-xs text-gray-600">選擇時間</span>
             </div>
             
             <div className={`w-8 h-0.5 rounded-full transition-all duration-300 ${
@@ -176,7 +176,7 @@ const BookingPage = () => {
               }`}>
                 3
               </div>
-              <span className="text-xs text-gray-600">Thông tin</span>
+              <span className="text-xs text-gray-600">資訊</span>
             </div>
           </div>
         </div>

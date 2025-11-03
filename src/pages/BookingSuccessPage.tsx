@@ -52,8 +52,8 @@ const BookingSuccessPage = () => {
                 <CheckCircle2 className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h1 className="text-base font-semibold text-gray-900">Đặt lịch thành công</h1>
-                <p className="text-xs text-gray-600">Cảm ơn bạn đã đặt lịch</p>
+                <h1 className="text-base font-semibold text-gray-900">預約成功</h1>
+                <p className="text-xs text-gray-600">感謝您的預約</p>
               </div>
             </div>
           </div>
@@ -66,8 +66,8 @@ const BookingSuccessPage = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
             <CheckCircle2 className="h-10 w-10 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{config.heading || 'Thông tin liên hệ đã được ghi nhận'}</h2>
-          <p className="text-gray-600">{config.subheading || 'Chúng tôi sẽ liên hệ lại để xác nhận và tư vấn chi tiết.'}</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{config.heading || '已收到您的聯絡資訊'}</h2>
+          <p className="text-gray-600">{config.subheading || '我們將再次聯繫您進行確認與詳細說明。'}</p>
         </div>
 
         {/* Summary badges */}
@@ -104,26 +104,26 @@ const BookingSuccessPage = () => {
           {/* Admin note */}
           <Card className="md:col-span-1 shadow-lg border-0 bg-gradient-to-br from-green-50 to-emerald-50">
             <CardHeader>
-              <CardTitle className="text-green-800">{config.adminNoteTitle || 'Lưu ý từ quản trị viên'}</CardTitle>
-              <CardDescription>{booking ? 'Vui lòng đọc kỹ thông tin dưới đây' : ''}</CardDescription>
+              <CardTitle className="text-green-800">{config.adminNoteTitle || '管理員提醒'}</CardTitle>
+              <CardDescription>{booking ? '請仔細閱讀以下資訊' : ''}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rich-content text-gray-700" dangerouslySetInnerHTML={{ __html: config.adminNoteContent || 'Cảm ơn bạn đã đặt lịch.' }} />
+              <div className="rich-content text-gray-700" dangerouslySetInnerHTML={{ __html: config.adminNoteContent || '感謝您的預約。' }} />
             </CardContent>
           </Card>
 
           {/* Booking details */}
           <Card className="md:col-span-2 shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-t-lg">
-              <CardTitle className="text-gray-800">Chi tiết đặt lịch</CardTitle>
-              <CardDescription>Thông tin bạn đã cung cấp</CardDescription>
+              <CardTitle className="text-gray-800">預約詳情</CardTitle>
+              <CardDescription>您提供的資訊</CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               {booking ? (
                 <>
                   <div className="grid sm:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-1">
-                      <p className="text-gray-500">Họ và tên</p>
+                      <p className="text-gray-500">姓名</p>
                       <p className="font-semibold text-gray-900">{booking.customerName}</p>
                     </div>
                     {booking.customerEmail && (
@@ -134,16 +134,16 @@ const BookingSuccessPage = () => {
                     )}
                     {booking.customerPhone && (
                       <div className="space-y-1">
-                        <p className="text-gray-500">Số điện thoại</p>
+                        <p className="text-gray-500">電話</p>
                         <p className="font-semibold text-gray-900">{booking.customerPhone}</p>
                       </div>
                     )}
                     <div className="space-y-1">
-                      <p className="text-gray-500">Ngày</p>
+                      <p className="text-gray-500">日期</p>
                       <p className="font-semibold text-gray-900">{formatDate(booking.bookingDate)}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-gray-500">Khung giờ</p>
+                      <p className="text-gray-500">時段</p>
                       <p className="font-semibold text-gray-900">{formatTime(booking.timeSlot)}</p>
                     </div>
                   </div>
@@ -151,7 +151,7 @@ const BookingSuccessPage = () => {
                   {/* Dynamic custom fields */}
                   {Array.isArray(booking.customFields) && booking.customFields.filter((f:any)=>f.isActive && f.label).length > 0 && (
                     <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-3">Các thông tin khác</p>
+                      <p className="text-sm font-semibold text-gray-700 mb-3">其他資訊</p>
                       <div className="grid sm:grid-cols-2 gap-4">
                         {booking.customFields
                           .filter((f: any) => f.isActive && f.label && (Array.isArray(f.value) ? f.value.length > 0 : String(f.value ?? '') !== ''))
@@ -168,12 +168,12 @@ const BookingSuccessPage = () => {
                   )}
                 </>
               ) : (
-                <p className="text-gray-500">Không tìm thấy thông tin đặt lịch.</p>
+                <p className="text-gray-500">找不到預約資訊。</p>
               )}
 
               <div className="pt-2">
                 <Button onClick={() => navigate('/')} className="bg-purple-600 hover:bg-purple-700 text-white">
-                  Về trang chủ
+                  回到首頁
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>

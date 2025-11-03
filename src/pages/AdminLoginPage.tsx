@@ -28,14 +28,14 @@ const AdminLoginPage = () => {
       setIsLoading(true)
       await login(data.email, data.password)
       toast({
-        title: "Đăng nhập thành công",
+        title: "登入成功",
         description: "Chào mừng bạn quay trở lại!"
       })
       navigate('/admin/dashboard')
     } catch (error: any) {
       toast({
-        title: "Đăng nhập thất bại",
-        description: error.response?.data?.message || "Email hoặc mật khẩu không đúng",
+        title: "登入失敗",
+        description: error.response?.data?.message || "Email 或密碼不正確",
         variant: "destructive"
       })
     } finally {
@@ -55,7 +55,7 @@ const AdminLoginPage = () => {
             </div>
             <CardTitle className="text-3xl font-bold text-gray-900">Admin Login</CardTitle>
             <CardDescription className="text-lg text-gray-600">
-              Đăng nhập để quản lý hệ thống đặt lịch
+              登入以管理預約系統
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 pb-8">
@@ -71,7 +71,7 @@ const AdminLoginPage = () => {
                     required: 'Email là bắt buộc',
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Email không hợp lệ'
+                      message: 'Email 無效'
                     }
                   })}
                   placeholder="admin@example.com"
@@ -127,12 +127,12 @@ const AdminLoginPage = () => {
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang đăng nhập...
+                    登入中...
                   </>
                 ) : (
                   <>
                     <Shield className="mr-2 h-4 w-4" />
-                    Đăng nhập
+                    登入
                   </>
                 )}
               </Button>
@@ -151,7 +151,7 @@ const AdminLoginPage = () => {
 
             {/* Demo credentials */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">Thông tin demo:</h4>
+              <h4 className="text-sm font-medium text-blue-900 mb-2">示範帳號：</h4>
               <div className="text-xs text-blue-700 space-y-1">
                 <p><strong>Email:</strong> admin@parkingzone.com</p>
                 <p><strong>Password:</strong> admin123</p>

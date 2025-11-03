@@ -11,11 +11,11 @@ interface FooterProps {
 
 const Footer = ({ 
   companyName = "Booking Calendar",
-  companyDescription = "Hệ thống đặt lịch tư vấn thông minh và tiện lợi",
+  companyDescription = "智慧且便利的諮詢預約系統",
   email = "info@bookingcalendar.com",
   phone = "0123 456 789",
-  address = "123 Đường ABC, Quận 1, TP.HCM",
-  support = ["Hướng dẫn sử dụng", "FAQ", "Liên hệ hỗ trợ"]
+  address = "越南胡志明市第一郡 ABC 路 123 號",
+  support = ["使用指南", "FAQ", "聯絡支援"]
 }: FooterProps) => {
   return (
     <footer className="bg-gray-900 text-white py-12">
@@ -33,7 +33,7 @@ const Footer = ({
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Liên hệ</h4>
+            <h4 className="font-semibold mb-4">聯絡方式</h4>
             <div className="space-y-2 text-gray-400">
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
@@ -50,7 +50,7 @@ const Footer = ({
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Hỗ trợ</h4>
+            <h4 className="font-semibold mb-4">支援</h4>
             <div className="space-y-2 text-gray-400">
               {support.map((item, index) => (
                 <p key={index}>{item}</p>

@@ -70,8 +70,8 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
     {
       onSuccess: (res) => {
         toast({
-          title: "Thành công",
-          description: "Đặt lịch thành công! Chúng tôi sẽ liên hệ lại với bạn.",
+          title: "成功",
+          description: "預約成功！我們將盡快與您聯繫。",
         })
         const id = res.data?.booking?._id
         if (id) {
@@ -82,8 +82,8 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra khi đặt lịch",
+          title: "錯誤",
+          description: error.response?.data?.message || "預約時發生錯誤",
           variant: "destructive"
         })
       }
@@ -138,7 +138,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
             />
             {errors[fieldName] && (
               <p className="text-sm text-red-500">
-                {field.label} là bắt buộc
+                {field.label} 為必填
               </p>
             )}
           </div>
@@ -164,7 +164,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
             />
             {errors[fieldName] && (
               <p className="text-sm text-red-500">
-                {field.label} là bắt buộc
+                {field.label} 為必填
               </p>
             )}
           </div>
@@ -187,7 +187,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
             />
             {errors[fieldName] && (
               <p className="text-sm text-red-500">
-                {field.label} là bắt buộc
+                {field.label} 為必填
               </p>
             )}
           </div>
@@ -228,7 +228,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
               onValueChange={(value) => setValue(fieldName as any, value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={`Chọn ${field.label}`} />
+                <SelectValue placeholder={`選擇 ${field.label}`} />
               </SelectTrigger>
               <SelectContent>
                 {field.options?.map(option => (
@@ -240,7 +240,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
             </Select>
             {errors[fieldName] && (
               <p className="text-sm text-red-500">
-                {field.label} là bắt buộc
+                {field.label} 為必填
               </p>
             )}
           </div>
@@ -273,7 +273,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
             </div>
             {errors[fieldName] && (
               <p className="text-sm text-red-500">
-                {field.label} là bắt buộc
+                {field.label} 為必填
               </p>
             )}
           </div>
@@ -324,9 +324,9 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
         <div className="inline-flex items-center justify-center w-20 h-20 bg-purple-100 rounded-full mb-6">
           <User className="h-10 w-10 text-purple-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Thông tin liên hệ</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">聯絡資訊</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Điền thông tin để hoàn tất đặt lịch tư vấn
+          填寫資訊以完成預約諮詢
         </p>
       </div>
 
@@ -352,7 +352,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
                 className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Chọn lại thời gian
+                重新選擇時間
               </Button>
             </div>
           </div>
@@ -362,9 +362,9 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
         <div>
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-t-lg">
-              <CardTitle className="text-center text-xl text-gray-800">Thông tin cá nhân</CardTitle>
+              <CardTitle className="text-center text-xl text-gray-800">個人資訊</CardTitle>
               <CardDescription className="text-center text-gray-600">
-                Vui lòng điền đầy đủ thông tin bên dưới
+                請完整填寫以下資訊
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -381,9 +381,9 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
                 ) : (
                   <div className="text-center py-12">
                     <User className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Chưa có trường thông tin</h3>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">尚無欄位</h3>
                     <p className="text-gray-500">
-                      Quản trị viên chưa cấu hình các trường thông tin. Vui lòng liên hệ để được hỗ trợ.
+                      管理員尚未設定欄位。如需協助，請與我們聯繫。
                     </p>
                   </div>
                 )}
@@ -396,7 +396,7 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
                     className="flex-1 h-12 border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Quay lại
+                    返回
                   </Button>
                   <Button 
                     type="submit" 
@@ -406,12 +406,12 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
                     {createBookingMutation.isLoading ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Đang xử lý...
+                        處理中...
                       </>
                     ) : (
                       <>
                         <CheckCircle className="mr-2 h-4 w-4" />
-                        Hoàn tất đặt lịch
+                        完成預約
                       </>
                     )}
                   </Button>

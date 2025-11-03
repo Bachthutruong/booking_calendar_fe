@@ -52,9 +52,9 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
         <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
           <Clock className="h-10 w-10 text-green-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Chọn khung giờ</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">選擇時段</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
-          Chọn khung giờ phù hợp cho ngày <span className="font-semibold text-blue-600">{selectedDate ? new Date(selectedDate).toLocaleDateString('vi-VN') : 'N/A'}</span>
+          為 <span className="font-semibold text-blue-600">{selectedDate ? new Date(selectedDate).toLocaleDateString('zh-TW') : 'N/A'}</span> 選擇合適的時段
         </p>
         <Button 
           variant="outline" 
@@ -62,7 +62,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
           className="border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Chọn ngày khác
+          選擇其他日期
         </Button>
       </div>
 
@@ -71,25 +71,25 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
         <div>
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
-              <CardTitle className="text-center text-xl text-gray-800">Khung giờ khả dụng</CardTitle>
+              <CardTitle className="text-center text-xl text-gray-800">可用時段</CardTitle>
               <CardDescription className="text-center text-gray-600">
-                {availableSlots.length} khung giờ có sẵn
+                {availableSlots.length} 個可用時段
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               {isLoading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Đang tải khung giờ...</p>
+                  <p className="mt-4 text-gray-600">正在載入時段...</p>
                 </div>
               ) : availableSlots.length === 0 ? (
                 <div className="text-center py-12">
                   <Clock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Không có khung giờ</h3>
-                  <p className="text-gray-500 mb-4">Không có khung giờ khả dụng cho ngày này</p>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">沒有可用時段</h3>
+                  <p className="text-gray-500 mb-4">此日期沒有可用時段</p>
                   <Button variant="outline" onClick={onBack} className="border-gray-300">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Chọn ngày khác
+                    選擇其他日期
                   </Button>
                 </div>
               ) : (
@@ -123,7 +123,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
                       disabled={!selectedTimeSlot}
                       className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                     >
-                      Tiếp tục
+                      繼續
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                     <Button 
@@ -132,11 +132,11 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
                       className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
                     >
                       <ArrowLeft className="mr-2 h-4 w-4" />
-                      Chọn ngày khác
+                      選擇其他日期
                     </Button>
                     {selectedTimeSlot && (
                       <span className="text-sm text-gray-600">
-                        Đã chọn: <span className="font-semibold text-gray-800">{selectedTimeSlot.includes('-') ? selectedTimeSlot.split('-').map(t => formatTime(t.trim())).join(' - ') : formatTime(selectedTimeSlot)}</span>
+                        已選擇：<span className="font-semibold text-gray-800">{selectedTimeSlot.includes('-') ? selectedTimeSlot.split('-').map(t => formatTime(t.trim())).join(' - ') : formatTime(selectedTimeSlot)}</span>
                       </span>
                     )}
                   </div>

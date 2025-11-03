@@ -24,9 +24,9 @@ const SuccessPageConfig = () => {
   const onSubmit = async (data: any) => {
     try {
       await adminAPI.updateSystemConfig('success_page', data.success_page || {})
-      toast({ title: 'Đã lưu', description: 'Cập nhật trang thành công' })
+      toast({ title: '已儲存', description: '更新成功頁面內容' })
     } catch (e) {
-      toast({ title: 'Lỗi', description: 'Không thể lưu cấu hình', variant: 'destructive' })
+      toast({ title: '錯誤', description: '無法儲存設定', variant: 'destructive' })
     }
   }
 
@@ -79,35 +79,35 @@ const SuccessPageConfig = () => {
             <CheckCircle2 className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Trang đặt thành công</h2>
-            <p className="text-gray-600">Thiết lập nội dung khi khách đặt lịch thành công</p>
+            <h2 className="text-2xl font-bold text-gray-900">成功預約頁面</h2>
+            <p className="text-gray-600">設定客戶預約成功時顯示的內容</p>
           </div>
         </div>
-        <Button onClick={handleSubmit(onSubmit)} className="bg-primary hover:bg-primary/90">Lưu</Button>
+        <Button onClick={handleSubmit(onSubmit)} className="bg-primary hover:bg-primary/90">儲存</Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Nội dung hiển thị</CardTitle>
-          <CardDescription>Các trường văn bản cho trang thành công</CardDescription>
+          <CardDescription>成功頁面的文字欄位</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="success_page.heading">Tiêu đề</Label>
-              <Input id="success_page.heading" placeholder="Đặt lịch thành công" {...register('success_page.heading')} />
+              <Label htmlFor="success_page.heading">標題</Label>
+              <Input id="success_page.heading" placeholder="預約成功" {...register('success_page.heading')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="success_page.subheading">Mô tả</Label>
-              <Input id="success_page.subheading" placeholder="Chúng tôi sẽ liên hệ lại..." {...register('success_page.subheading')} />
+              <Label htmlFor="success_page.subheading">說明</Label>
+              <Input id="success_page.subheading" placeholder="我們將再與您聯繫..." {...register('success_page.subheading')} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="success_page.adminNoteTitle">Tiêu đề lưu ý</Label>
-            <Input id="success_page.adminNoteTitle" placeholder="Lưu ý từ quản trị viên" {...register('success_page.adminNoteTitle')} />
+            <Label htmlFor="success_page.adminNoteTitle">提醒標題</Label>
+            <Input id="success_page.adminNoteTitle" placeholder="管理員提醒" {...register('success_page.adminNoteTitle')} />
           </div>
           <div className="space-y-2">
-            <Label>Nội dung lưu ý</Label>
+            <Label>提醒內容</Label>
             <div className="border rounded-md bg-white">
               <div className="flex flex-wrap items-center gap-2 p-2 border-b">
                 <button type="button" className="px-2 py-1 text-sm rounded hover:bg-gray-100 font-bold" onMouseDown={(e)=>{e.preventDefault(); exec('bold')}}>B</button>
@@ -117,8 +117,8 @@ const SuccessPageConfig = () => {
 
                 <span className="mx-1 h-5 w-px bg-gray-300" />
 
-                <select className="px-2 py-1 text-sm border rounded" onChange={(e) => { const v = e.target.value; if (v) exec('formatBlock', v); e.currentTarget.value = '' }} defaultValue=""><option value="">Kiểu</option><option value="h1">H1</option><option value="h2">H2</option><option value="h3">H3</option><option value="p">Đoạn</option><option value="blockquote">Trích dẫn</option></select>
-                <select className="px-2 py-1 text-sm border rounded" onChange={(e) => { const v = e.target.value; if (v) exec('fontSize', v); e.currentTarget.value = '' }} defaultValue=""><option value="">Cỡ</option><option value="2">Nhỏ</option><option value="3">Bình thường</option><option value="4">Lớn</option><option value="5">Rất lớn</option></select>
+                <select className="px-2 py-1 text-sm border rounded" onChange={(e) => { const v = e.target.value; if (v) exec('formatBlock', v); e.currentTarget.value = '' }} defaultValue=""><option value="">樣式</option><option value="h1">H1</option><option value="h2">H2</option><option value="h3">H3</option><option value="p">段落</option><option value="blockquote">引言</option></select>
+                <select className="px-2 py-1 text-sm border rounded" onChange={(e) => { const v = e.target.value; if (v) exec('fontSize', v); e.currentTarget.value = '' }} defaultValue=""><option value="">字級</option><option value="2">小</option><option value="3">一般</option><option value="4">大</option><option value="5">特大</option></select>
 
                 <label className="px-2 py-1 text-sm border rounded cursor-pointer">Màu
                   <input type="color" className="hidden" onInput={(e) => exec('foreColor', (e.target as HTMLInputElement).value)} />
@@ -151,7 +151,7 @@ const SuccessPageConfig = () => {
 
                 <button type="button" className="px-2 py-1 text-sm rounded hover:bg-gray-100" onMouseDown={(e)=>{e.preventDefault(); exec('undo')}}>Hoàn tác</button>
                 <button type="button" className="px-2 py-1 text-sm rounded hover:bg-gray-100" onMouseDown={(e)=>{e.preventDefault(); exec('redo')}}>Làm lại</button>
-                <button type="button" className="px-2 py-1 text-sm rounded hover:bg-gray-100" onMouseDown={(e)=>{e.preventDefault(); exec('removeFormat')}}>Xóa định dạng</button>
+                <button type="button" className="px-2 py-1 text-sm rounded hover:bg-gray-100" onMouseDown={(e)=>{e.preventDefault(); exec('removeFormat')}}>清除格式</button>
               </div>
               <div
                 ref={editorRef}

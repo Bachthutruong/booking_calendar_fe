@@ -58,9 +58,9 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
         <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
           <CalendarIcon className="h-10 w-10 text-blue-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Chọn ngày đặt lịch</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">選擇預約日期</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Chọn ngày bạn muốn đặt lịch tư vấn. Bạn có thể thay đổi lựa chọn bất kỳ lúc nào.
+          請選擇您想預約諮詢的日期。您隨時可以變更選擇。
         </p>
       </div> */}
 
@@ -71,10 +71,10 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
             <div className="text-center">
               <div className="flex items-center justify-center space-x-3 mb-2">
                 <CalendarIcon className="h-8 w-8 text-white" />
-                <CardTitle className="text-3xl font-bold">Lịch đặt hẹn</CardTitle>
+                <CardTitle className="text-3xl font-bold">預約行事曆</CardTitle>
               </div>
               <CardDescription className="text-blue-100 text-lg">
-                Nhấp vào ngày để chọn thời gian tư vấn
+                點擊日期以選擇諮詢時間
               </CardDescription>
             </div>
           </CardHeader>
@@ -87,7 +87,7 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                     <CalendarIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="flex items-center space-x-2">
-                    <p className="font-bold text-gray-800 text-lg">Chọn tháng/năm</p>
+                    <p className="font-bold text-gray-800 text-lg">選擇月份／年份</p>
                     <div className="flex items-center space-x-2">
                       <Select value={currentMonth.toString()} onValueChange={handleMonthChange}>
                         <SelectTrigger className="w-32 h-8 text-sm">
@@ -182,15 +182,15 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                    <span className="text-gray-600">Đã chọn</span>
+                    <span className="text-gray-600">已選擇</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-orange-300 rounded-full"></div>
-                    <span className="text-gray-600">Hôm nay</span>
+                    <span className="text-gray-600">今天</span>
                   </div>
                 </div>
                 <div className="text-gray-500">
-                  💡 Chọn ngày từ ngày mai
+                  💡 從明天開始可選擇日期
                 </div>
               </div>
             </div>
@@ -204,13 +204,13 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
               <CardHeader>
                 <CardTitle className="text-center text-green-800 flex items-center justify-center">
                   <CalendarIcon className="h-5 w-5 mr-2" />
-                  Ngày đã chọn
+                  已選擇日期
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center space-y-4">
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                   <p className="text-2xl font-bold text-gray-900 mb-2">
-                    {selectedDate.toLocaleDateString('vi-VN', { 
+                    {selectedDate.toLocaleDateString('zh-TW', { 
                       weekday: 'long',
                       year: 'numeric', 
                       month: 'long', 
@@ -229,7 +229,7 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                     className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
-                    Chọn lại
+                    重新選擇
                   </Button>
                   <Button 
                     onClick={handleNext} 
@@ -245,9 +245,9 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
             <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
               <CardContent className="text-center py-8">
                 <CalendarIcon className="h-16 w-16 text-blue-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Chưa chọn ngày</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">尚未選擇日期</h3>
                 <p className="text-gray-600">
-                  Vui lòng chọn một ngày từ lịch bên trái để tiếp tục
+                  請從左側行事曆選擇日期以繼續
                 </p>
               </CardContent>
             </Card>
@@ -260,7 +260,7 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
                   <span className="text-2xl">💡</span>
                 </div>
-                <h4 className="text-lg font-bold text-gray-800 mb-3">Hướng dẫn đặt lịch</h4>
+                <h4 className="text-lg font-bold text-gray-800 mb-3">預約指南</h4>
               </div>
               
               <div className="space-y-3">
@@ -269,8 +269,8 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                     <span className="text-green-600 text-sm">✓</span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-800">Chọn ngày phù hợp</p>
-                    <p className="text-sm text-gray-600">Chỉ có thể đặt lịch từ ngày mai trở đi</p>
+                    <p className="font-medium text-gray-800">選擇合適日期</p>
+                    <p className="text-sm text-gray-600">只能預約從明天起的日期</p>
                   </div>
                 </div>
                 
@@ -279,8 +279,8 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                     <span className="text-blue-600 text-sm">🔄</span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-800">Linh hoạt thay đổi</p>
-                    <p className="text-sm text-gray-600">Có thể thay đổi ngày bất kỳ lúc nào</p>
+                    <p className="font-medium text-gray-800">靈活變更</p>
+                    <p className="text-sm text-gray-600">可隨時變更日期</p>
                   </div>
                 </div>
                 
@@ -289,15 +289,15 @@ const DateSelector = ({ onDateSelect, onNext }: DateSelectorProps) => {
                     <span className="text-purple-600 text-sm">⏰</span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-800">Bước tiếp theo</p>
-                    <p className="text-sm text-gray-600">Sau khi chọn ngày, bạn sẽ chọn khung giờ phù hợp</p>
+                    <p className="font-medium text-gray-800">下一步</p>
+                    <p className="text-sm text-gray-600">選擇日期後，您將選擇合適的時段</p>
                   </div>
                 </div>
               </div>
               
               <div className="mt-4 p-3 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg">
                 <p className="text-sm text-center text-gray-700">
-                  <span className="font-semibold">🎯 Mẹo:</span> Chọn ngày cuối tuần để có nhiều khung giờ hơn!
+                  <span className="font-semibold">🎯 小撇步：</span> 週末通常會有較多可用時段！
                 </p>
               </div>
             </CardContent>

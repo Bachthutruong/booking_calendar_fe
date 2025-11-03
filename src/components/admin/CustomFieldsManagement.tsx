@@ -52,14 +52,14 @@ const CustomFieldsManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('customFields')
-        toast({ title: "Thành công", description: "Tạo trường tùy chỉnh thành công" })
+        toast({ title: "成功", description: "建立自訂欄位成功" })
         setIsDialogOpen(false)
         resetForm()
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -71,15 +71,15 @@ const CustomFieldsManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('customFields')
-        toast({ title: "Thành công", description: "Cập nhật trường tùy chỉnh thành công" })
+        toast({ title: "成功", description: "更新自訂欄位成功" })
         setEditingField(null)
         setIsDialogOpen(false)
         resetForm()
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -91,12 +91,12 @@ const CustomFieldsManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('customFields')
-        toast({ title: "Thành công", description: "Xóa trường tùy chỉnh thành công" })
+        toast({ title: "成功", description: "刪除自訂欄位成功" })
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -179,15 +179,15 @@ const CustomFieldsManagement = () => {
 
   const getFieldTypeText = (type: string) => {
     const types: { [key: string]: string } = {
-      'text': 'Văn bản ngắn',
-      'textarea': 'Văn bản dài',
+      'text': '短文本',
+      'textarea': '長文本',
       'email': 'Email',
-      'phone': 'Số điện thoại',
-      'select': 'Chọn từ danh sách',
-      'checkbox': 'Nhiều lựa chọn',
-      'radio': 'Một lựa chọn',
-      'date': 'Ngày tháng',
-      'number': 'Số'
+      'phone': '電話',
+      'select': '下拉選擇',
+      'checkbox': '多選',
+      'radio': '單選',
+      'date': '日期',
+      'number': '數字'
     }
     return types[type] || type
   }
@@ -207,9 +207,9 @@ const CustomFieldsManagement = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
           <Type className="h-8 w-8 text-purple-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Quản lý trường tùy chỉnh</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">自訂欄位管理</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Thiết lập các trường thông tin bổ sung cho form đặt lịch tư vấn
+          為預約諮詢表單設定額外的欄位
         </p>
       </div>
 
@@ -217,7 +217,7 @@ const CustomFieldsManagement = () => {
       <div className="flex justify-center">
         <Button onClick={handleCreate} className="bg-purple-600 hover:bg-purple-700">
           <Plus className="h-4 w-4 mr-2" />
-          Tạo trường mới
+          建立新欄位
         </Button>
       </div>
 
@@ -225,9 +225,9 @@ const CustomFieldsManagement = () => {
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
           <div className="text-center">
-            <CardTitle className="text-xl text-gray-800">Danh sách trường tùy chỉnh</CardTitle>
+            <CardTitle className="text-xl text-gray-800">自訂欄位列表</CardTitle>
             <CardDescription className="text-gray-600">
-              {customFields.length} trường được thiết lập
+              已建立 {customFields.length} 個欄位
             </CardDescription>
           </div>
         </CardHeader>
@@ -235,16 +235,16 @@ const CustomFieldsManagement = () => {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Đang tải trường tùy chỉnh...</p>
+              <p className="mt-4 text-gray-600">正在載入自訂欄位...</p>
             </div>
           ) : customFields.length === 0 ? (
             <div className="text-center py-12">
               <FormInput className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Chưa có trường tùy chỉnh</h3>
-              <p className="text-gray-500 mb-4">Hãy tạo trường đầu tiên để thu thập thông tin khách hàng</p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">尚無自訂欄位</h3>
+              <p className="text-gray-500 mb-4">請建立第一個欄位以蒐集客戶資訊</p>
               <Button onClick={handleCreate} className="bg-purple-600 hover:bg-purple-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Tạo trường đầu tiên
+                建立第一個欄位
               </Button>
             </div>
           ) : (
@@ -252,13 +252,13 @@ const CustomFieldsManagement = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b">
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Tên trường</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Loại</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Thứ tự</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Trạng thái</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Bắt buộc</th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-700">Tùy chọn</th>
-                    <th className="px-6 py-4 text-center font-semibold text-gray-700">Thao tác</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">欄位名稱</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">類型</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">排序</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">狀態</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">必填</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">選項</th>
+                    <th className="px-6 py-4 text-center font-semibold text-gray-700">操作</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -296,17 +296,17 @@ const CustomFieldsManagement = () => {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {field.isActive ? 'Hoạt động' : 'Tạm dừng'}
+                          {field.isActive ? '啟用' : '停用'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         {field.required ? (
                           <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
-                            Có
+                            是
                           </span>
                         ) : (
                           <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                            Không
+                            否
                           </span>
                         )}
                       </td>
@@ -452,7 +452,7 @@ const CustomFieldsManagement = () => {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {editingField ? 'Chỉnh sửa trường tùy chỉnh' : 'Tạo trường tùy chỉnh mới'}
+              {editingField ? '編輯自訂欄位' : '建立新自訂欄位'}
             </DialogTitle>
           </DialogHeader>
           
@@ -460,7 +460,7 @@ const CustomFieldsManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Tên trường (không dấu)
+                  欄位代號（英文與底線）
                 </Label>
                 <Input
                   id="name"
@@ -470,18 +470,18 @@ const CustomFieldsManagement = () => {
                   required
                   className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
-                <p className="text-xs text-gray-500">Sử dụng chữ thường và dấu gạch dưới</p>
+                <p className="text-xs text-gray-500">請使用小寫與底線</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="label" className="text-sm font-medium text-gray-700">
-                  Nhãn hiển thị
+                  顯示標籤
                 </Label>
                 <Input
                   id="label"
                   value={formData.label}
                   onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                  placeholder="Tên công ty"
+                  placeholder="公司名稱"
                   required
                   className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
@@ -491,7 +491,7 @@ const CustomFieldsManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="type" className="text-sm font-medium text-gray-700">
-                  Loại trường
+                  欄位類型
                 </Label>
                 <select
                   id="type"
@@ -499,21 +499,21 @@ const CustomFieldsManagement = () => {
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >
-                  <option value="text">Văn bản ngắn</option>
-                  <option value="textarea">Văn bản dài</option>
+                  <option value="text">短文本</option>
+                  <option value="textarea">長文本</option>
                   <option value="email">Email</option>
-                  <option value="phone">Số điện thoại</option>
-                  <option value="select">Chọn từ danh sách</option>
-                  <option value="checkbox">Nhiều lựa chọn</option>
-                  <option value="radio">Một lựa chọn</option>
-                  <option value="date">Ngày tháng</option>
-                  <option value="number">Số</option>
+                  <option value="phone">電話</option>
+                  <option value="select">下拉選擇</option>
+                  <option value="checkbox">多選</option>
+                  <option value="radio">單選</option>
+                  <option value="date">日期</option>
+                  <option value="number">數字</option>
                 </select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="order" className="text-sm font-medium text-gray-700">
-                  Thứ tự hiển thị
+                  顯示順序
                 </Label>
                 <Input
                   id="order"
@@ -528,14 +528,14 @@ const CustomFieldsManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="placeholder" className="text-sm font-medium text-gray-700">
-                Placeholder
-              </Label>
-              <Input
+                <Label htmlFor="placeholder" className="text-sm font-medium text-gray-700">
+                  Placeholder（佔位提示）
+                </Label>
+                <Input
                 id="placeholder"
                 value={formData.placeholder}
                 onChange={(e) => setFormData({ ...formData, placeholder: e.target.value })}
-                placeholder="Nhập placeholder..."
+                  placeholder="輸入佔位提示..."
                 className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
               />
             </div>
@@ -543,18 +543,18 @@ const CustomFieldsManagement = () => {
             {/* Options for select, radio, checkbox */}
             {(formData.type === 'select' || formData.type === 'radio' || formData.type === 'checkbox') && (
               <div className="space-y-4">
-                <Label className="text-sm font-medium text-gray-700">Tùy chọn</Label>
+                <Label className="text-sm font-medium text-gray-700">選項</Label>
                 <div className="space-y-3">
                   {formData.options.map((option, index) => (
                     <div key={index} className="flex gap-3">
                       <Input
-                        placeholder="Nhãn hiển thị"
+                        placeholder="顯示標籤"
                         value={option.label}
                         onChange={(e) => updateOption(index, 'label', e.target.value)}
                         className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                       />
                       <Input
-                        placeholder="Giá trị"
+                        placeholder="值"
                         value={option.value}
                         onChange={(e) => updateOption(index, 'value', e.target.value)}
                         className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
@@ -566,12 +566,12 @@ const CustomFieldsManagement = () => {
                         onClick={() => removeOption(index)}
                         className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
                       >
-                        Xóa
+                        刪除
                       </Button>
                     </div>
                   ))}
                   <Button type="button" variant="outline" onClick={addOption} className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                    Thêm tùy chọn
+                    新增選項
                   </Button>
                 </div>
               </div>
@@ -585,7 +585,7 @@ const CustomFieldsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, required: e.target.checked })}
                   className="mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">Bắt buộc</span>
+                <span className="text-sm text-gray-700">必填</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -594,7 +594,7 @@ const CustomFieldsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   className="mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">Kích hoạt</span>
+                <span className="text-sm text-gray-700">啟用</span>
               </label>
             </div>
 
@@ -605,7 +605,7 @@ const CustomFieldsManagement = () => {
                 onClick={() => setIsDialogOpen(false)}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
-                Hủy
+                取消
               </Button>
               <Button 
                 type="submit" 
@@ -615,10 +615,10 @@ const CustomFieldsManagement = () => {
                 {createMutation.isLoading || updateMutation.isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang xử lý...
+                    處理中...
                   </>
                 ) : (
-                  editingField ? 'Cập nhật' : 'Tạo mới'
+                  editingField ? '更新' : '建立'
                 )}
               </Button>
             </div>
@@ -631,7 +631,7 @@ const CustomFieldsManagement = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-red-600">
-              Xác nhận xóa trường tùy chỉnh
+              確認刪除自訂欄位
             </DialogTitle>
           </DialogHeader>
           
@@ -641,8 +641,8 @@ const CustomFieldsManagement = () => {
                 <Trash2 className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Bạn có chắc chắn muốn xóa?</h3>
-                <p className="text-sm text-gray-600">Hành động này không thể hoàn tác</p>
+                <h3 className="font-semibold text-gray-900">您確定要刪除嗎？</h3>
+                <p className="text-sm text-gray-600">此操作無法復原</p>
               </div>
             </div>
             
@@ -650,15 +650,15 @@ const CustomFieldsManagement = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Tên trường:</span>
+                    <span className="font-medium text-gray-700">欄位名稱：</span>
                     <span className="text-gray-900">{deleteField.label}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Loại:</span>
+                    <span className="font-medium text-gray-700">類型：</span>
                     <span className="text-gray-900">{getFieldTypeText(deleteField.type)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Thứ tự:</span>
+                    <span className="font-medium text-gray-700">順序：</span>
                     <span className="text-gray-900">{deleteField.order}</span>
                   </div>
                 </div>
@@ -672,7 +672,7 @@ const CustomFieldsManagement = () => {
               onClick={() => setIsDeleteDialogOpen(false)}
               className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
-              Hủy
+              取消
             </Button>
             <Button 
               variant="destructive"
@@ -689,12 +689,12 @@ const CustomFieldsManagement = () => {
               {deleteMutation.isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Đang xóa...
+                  刪除中...
                 </>
               ) : (
                 <>
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Xóa trường
+                  刪除欄位
                 </>
               )}
             </Button>

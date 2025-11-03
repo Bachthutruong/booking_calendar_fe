@@ -54,14 +54,14 @@ const TimeSlotsManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('timeSlots')
-        toast({ title: "Thành công", description: "Tạo khung giờ thành công" })
+        toast({ title: "成功", description: "建立時段成功" })
         setIsDialogOpen(false)
         resetForm()
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -73,15 +73,15 @@ const TimeSlotsManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('timeSlots')
-        toast({ title: "Thành công", description: "Cập nhật khung giờ thành công" })
+        toast({ title: "成功", description: "更新時段成功" })
         setEditingSlot(null)
         setIsDialogOpen(false)
         resetForm()
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -93,12 +93,12 @@ const TimeSlotsManagement = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('timeSlots')
-        toast({ title: "Thành công", description: "Xóa khung giờ thành công" })
+        toast({ title: "成功", description: "刪除時段成功" })
       },
       onError: (error: any) => {
         toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
+          title: "錯誤",
+          description: error.response?.data?.message || "發生錯誤",
           variant: "destructive"
         })
       }
@@ -178,8 +178,8 @@ const TimeSlotsManagement = () => {
         createMutation.mutate(submitData)
       } catch (error) {
         toast({
-          title: "Lỗi",
-          description: "Có lỗi xảy ra khi cập nhật khung giờ",
+          title: "錯誤",
+          description: "更新時段時發生錯誤",
           variant: "destructive"
         })
       }
@@ -324,7 +324,7 @@ const TimeSlotsManagement = () => {
             <div>
               <CardTitle className="text-xl text-gray-800">{title}</CardTitle>
               <CardDescription className="text-gray-600">
-                {groupedSlots.reduce((total, group) => total + group.length, 0)} khung giờ được thiết lập trong {groupedSlots.length} nhóm
+                已設定 {groupedSlots.reduce((total, group) => total + group.length, 0)} 個時段，分為 {groupedSlots.length} 組
               </CardDescription>
             </div>
           </div>
@@ -333,12 +333,12 @@ const TimeSlotsManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">Thứ</TableHead>
-                <TableHead className="w-[200px]">Khung giờ</TableHead>
-                <TableHead className="w-[150px]">Ngày cụ thể</TableHead>
-                <TableHead className="w-[120px]">Số lượng</TableHead>
-                <TableHead className="w-[120px]">Trạng thái</TableHead>
-                <TableHead className="w-[120px]">Thao tác</TableHead>
+                <TableHead className="w-[120px]">類型</TableHead>
+                <TableHead className="w-[200px]">時段</TableHead>
+                <TableHead className="w/[150px]">特定日期</TableHead>
+                <TableHead className="w-[120px]">數量</TableHead>
+                <TableHead className="w-[120px]">狀態</TableHead>
+                <TableHead className="w-[120px]">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -357,10 +357,10 @@ const TimeSlotsManagement = () => {
                         </div>
                         <span className="text-sm font-medium text-gray-900">
                           {firstSlot.specificDate 
-                            ? `Ngày cụ thể: ${new Date(firstSlot.specificDate).toLocaleDateString('vi-VN')}`
+                            ? `特定日期：${new Date(firstSlot.specificDate).toLocaleDateString('zh-TW')}`
                             : isAllDaysGroup
-                              ? 'Tất cả ngày (Thứ 2 - Chủ nhật)'
-                              : `Theo thứ: ${['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][firstSlot.dayOfWeek]}`}
+                              ? '全部日期（週一 - 週日）'
+                              : `依星期：${['週日','週一','週二','週三','週四','週五','週六'][firstSlot.dayOfWeek]}`}
                         </span>
                       </div>
                     </TableCell>
@@ -370,7 +370,7 @@ const TimeSlotsManagement = () => {
                           const allClosed = group.every(s => s.maxBookings === 0)
                           if (allClosed) {
                             return (
-                              <span className="text-sm text-gray-400">Không có khung giờ</span>
+                              <span className="text-sm text-gray-400">沒有時段</span>
                             )
                           }
                           // Lấy unique time slots để tránh duplicate, loại bỏ sentinel 00:00-00:00
@@ -397,11 +397,11 @@ const TimeSlotsManagement = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {firstSlot.specificDate ? (
+                          {firstSlot.specificDate ? (
                         <div className="flex items-center gap-2">
                           <CalendarDays className="h-4 w-4 text-purple-500" />
                           <span className="text-sm text-purple-700 font-medium">
-                            {new Date(firstSlot.specificDate).toLocaleDateString('vi-VN')}
+                            {new Date(firstSlot.specificDate).toLocaleDateString('zh-TW')}
                           </span>
                         </div>
                       ) : (
@@ -415,7 +415,7 @@ const TimeSlotsManagement = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant={firstSlot.isActive ? "default" : "secondary"}>
-                        {firstSlot.isActive ? 'Hoạt động' : 'Tạm dừng'}
+                        {firstSlot.isActive ? '啟用' : '停用'}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -457,9 +457,9 @@ const TimeSlotsManagement = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
           <Settings className="h-8 w-8 text-blue-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Quản lý khung giờ</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">時段管理</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Thiết lập các khung giờ khả dụng cho đặt lịch tư vấn
+          設定可用的諮詢預約時段
         </p>
       </div>
 
@@ -467,7 +467,7 @@ const TimeSlotsManagement = () => {
       <div className="flex justify-center gap-4">
         <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4 mr-2" />
-          Tạo khung giờ mới
+          建立新時段
         </Button>
         <Button 
           onClick={() => {
@@ -478,7 +478,7 @@ const TimeSlotsManagement = () => {
           className="border-green-300 text-green-700 hover:bg-green-50"
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          Cài đặt theo thứ
+          依星期設定
         </Button>
         <Button 
           onClick={() => {
@@ -489,7 +489,7 @@ const TimeSlotsManagement = () => {
           className="border-purple-300 text-purple-700 hover:bg-purple-50"
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          Cài đặt ngày cụ thể
+          設定特定日期
         </Button>
       </div>
 
@@ -505,7 +505,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('all')}
         >
           <Globe className="h-4 w-4 mr-2" />
-          Tất cả ({allGroupedSlots.length})
+          全部 ({allGroupedSlots.length})
         </Badge>
         <Badge 
           variant={activeFilter === 'specific' ? "default" : "outline"}
@@ -517,7 +517,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('specific')}
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          Ngày cụ thể ({specificGroupedSlots.length})
+          特定日期 ({specificGroupedSlots.length})
         </Badge>
         <Badge 
           variant={activeFilter === 'weekday' ? "default" : "outline"}
@@ -529,7 +529,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('weekday')}
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          Theo thứ ({weekdayGroupedSlots.length})
+          依星期 ({weekdayGroupedSlots.length})
         </Badge>
         <Badge 
           variant={activeFilter === 'allDays' ? "default" : "outline"}
@@ -541,7 +541,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('allDays')}
         >
           <Globe className="h-4 w-4 mr-2" />
-          Tất cả ngày ({allDaysGroupedSlots.length})
+          全部日期 ({allDaysGroupedSlots.length})
         </Badge>
       </div>
 
@@ -551,7 +551,7 @@ const TimeSlotsManagement = () => {
           <CardContent className="p-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Đang tải khung giờ...</p>
+              <p className="mt-4 text-gray-600">正在載入時段...</p>
             </div>
           </CardContent>
         </Card>
@@ -560,11 +560,11 @@ const TimeSlotsManagement = () => {
           <CardContent className="p-12">
             <div className="text-center">
               <Clock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Chưa có khung giờ</h3>
-              <p className="text-gray-500 mb-4">Hãy tạo khung giờ đầu tiên để bắt đầu</p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">尚無時段</h3>
+              <p className="text-gray-500 mb-4">請建立第一個時段以開始使用</p>
               <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Tạo khung giờ đầu tiên
+                建立第一個時段
               </Button>
             </div>
           </CardContent>
@@ -576,19 +576,19 @@ const TimeSlotsManagement = () => {
               switch (activeFilter) {
                 case 'specific':
                   return {
-                    title: "Ngày cụ thể (Ưu tiên cao nhất)",
+                    title: "特定日期（最高優先）",
                     icon: <CalendarDays className="h-6 w-6 text-purple-600" />,
                     color: "from-purple-50 to-pink-50"
                   }
                 case 'weekday':
                   return {
-                    title: "Theo thứ trong tuần",
+                    title: "依星期規則",
                     icon: <CalendarDays className="h-6 w-6 text-green-600" />,
                     color: "from-green-50 to-emerald-50"
                   }
                 default:
                   return {
-                    title: "Tất cả khung giờ",
+                    title: "所有時段",
                     icon: <Settings className="h-6 w-6 text-gray-600" />,
                     color: "from-gray-50 to-slate-50"
                   }
@@ -696,14 +696,14 @@ const TimeSlotsManagement = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {editingSlot ? 'Chỉnh sửa khung giờ' : 'Tạo khung giờ mới'}
+              {editingSlot ? '編輯時段' : '建立新時段'}
             </DialogTitle>
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
-                Loại cài đặt
+                設定類型
               </Label>
               <div className="grid grid-cols-3 gap-3">
                 <label className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -720,8 +720,8 @@ const TimeSlotsManagement = () => {
                     className="sr-only"
                   />
                   <div className="text-center">
-                    <div className="font-medium">Tất cả ngày</div>
-                    <div className="text-xs text-gray-500">Thứ 2 - CN</div>
+                    <div className="font-medium">全部日期</div>
+                    <div className="text-xs text-gray-500">週一 - 週日</div>
                   </div>
                 </label>
                 
@@ -739,8 +739,8 @@ const TimeSlotsManagement = () => {
                     className="sr-only"
                   />
                   <div className="text-center">
-                    <div className="font-medium">Theo thứ</div>
-                    <div className="text-xs text-gray-500">Chọn một thứ</div>
+                    <div className="font-medium">依星期</div>
+                    <div className="text-xs text-gray-500">選擇一個星期幾</div>
                   </div>
                 </label>
                 
@@ -758,8 +758,8 @@ const TimeSlotsManagement = () => {
                     className="sr-only"
                   />
                   <div className="text-center">
-                    <div className="font-medium">Ngày cụ thể</div>
-                    <div className="text-xs text-gray-500">Ưu tiên cao</div>
+                    <div className="font-medium">特定日期</div>
+                    <div className="text-xs text-gray-500">高優先權</div>
                   </div>
                 </label>
               </div>
@@ -768,20 +768,20 @@ const TimeSlotsManagement = () => {
             {formData.type === 'weekday' && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
-                  Chọn thứ
+                  選擇星期
                 </Label>
                 <Select value={String(formData.dayOfWeek)} onValueChange={(v) => setFormData({ ...formData, dayOfWeek: parseInt(v) })}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Thứ 2</SelectItem>
-                    <SelectItem value="2">Thứ 3</SelectItem>
-                    <SelectItem value="3">Thứ 4</SelectItem>
-                    <SelectItem value="4">Thứ 5</SelectItem>
-                    <SelectItem value="5">Thứ 6</SelectItem>
-                    <SelectItem value="6">Thứ 7</SelectItem>
-                    <SelectItem value="0">Chủ nhật</SelectItem>
+                  <SelectItem value="1">週一</SelectItem>
+                  <SelectItem value="2">週二</SelectItem>
+                  <SelectItem value="3">週三</SelectItem>
+                  <SelectItem value="4">週四</SelectItem>
+                  <SelectItem value="5">週五</SelectItem>
+                  <SelectItem value="6">週六</SelectItem>
+                  <SelectItem value="0">週日</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -790,7 +790,7 @@ const TimeSlotsManagement = () => {
             {formData.type === 'specific' && (
               <div className="space-y-2">
                 <Label htmlFor="specificDate" className="text-sm font-medium text-gray-700">
-                  Ngày cụ thể
+                  特定日期
                 </Label>
                 <Input
                   id="specificDate"
@@ -800,13 +800,13 @@ const TimeSlotsManagement = () => {
                   required={formData.type === 'specific'}
                   className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
-                <p className="text-xs text-purple-600">Ngày cụ thể có ưu tiên cao nhất</p>
+                <p className="text-xs text-purple-600">特定日期具有最高優先權</p>
               </div>
             )}
 
             {/* Toggle closed day */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Chế độ nhận khách</Label>
+              <Label className="text-sm font-medium text-gray-700">接待模式</Label>
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -822,14 +822,14 @@ const TimeSlotsManagement = () => {
                   }}
                   className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">Không nhận khách (ẩn khung giờ)</span>
+                <span className="text-sm text-gray-700">不接待（隱藏時段）</span>
               </div>
             </div>
 
             {!formData.closed && (
             <div className="space-y-2">
               <Label htmlFor="timeSlots" className="text-sm font-medium text-gray-700">
-                Khung giờ (cách nhau bởi dấu phẩy)
+                時段（以逗號分隔）
               </Label>
               <Input
                 id="timeSlots"
@@ -841,7 +841,7 @@ const TimeSlotsManagement = () => {
                 className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
               <p className="text-xs text-gray-500">
-                Ví dụ: 8:00-9:00,9:00-10:00,10:00-11:00,14:00-15:00,15:00-16:00
+                範例：8:00-9:00,9:00-10:00,10:00-11:00,14:00-15:00,15:00-16:00
               </p>
             </div>
             )}
@@ -849,7 +849,7 @@ const TimeSlotsManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="maxBookings" className="text-sm font-medium text-gray-700">
-                  Số lượng đặt tối đa mỗi khung giờ
+                  每個時段的最大預約數
                 </Label>
                 <Input
                   id="maxBookings"
@@ -864,7 +864,7 @@ const TimeSlotsManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Trạng thái</Label>
+                <Label className="text-sm font-medium text-gray-700">狀態</Label>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -872,7 +872,7 @@ const TimeSlotsManagement = () => {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">Kích hoạt khung giờ</span>
+                  <span className="text-sm text-gray-700">啟用時段</span>
                 </div>
               </div>
             </div>
@@ -884,7 +884,7 @@ const TimeSlotsManagement = () => {
                 onClick={() => setIsDialogOpen(false)}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
-                Hủy
+                取消
               </Button>
               <Button 
                 type="submit" 
@@ -894,10 +894,10 @@ const TimeSlotsManagement = () => {
                 {createMutation.isLoading || updateMutation.isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang xử lý...
+                    處理中...
                   </>
                 ) : (
-                  editingSlot ? 'Cập nhật' : 'Tạo mới'
+                  editingSlot ? '更新' : '建立'
                 )}
               </Button>
             </div>
@@ -910,7 +910,7 @@ const TimeSlotsManagement = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-red-600">
-              Xác nhận xóa
+              確認刪除
             </DialogTitle>
           </DialogHeader>
           
@@ -921,35 +921,35 @@ const TimeSlotsManagement = () => {
               </div>
               <div>
                 <p className="font-medium text-red-800">
-                  Bạn có chắc chắn muốn xóa quy tắc này?
+                  您確定要刪除此規則嗎？
                 </p>
                 <p className="text-sm text-red-600">
-                  Hành động này không thể hoàn tác
+                  此操作無法復原
                 </p>
               </div>
             </div>
 
             {deleteGroup && (
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-800 mb-2">Thông tin quy tắc sẽ bị xóa:</h4>
+                <h4 className="font-medium text-gray-800 mb-2">將被刪除的規則資訊：</h4>
                 <div className="space-y-2 text-sm text-gray-600">
                   <div>
-                    <span className="font-medium">Loại:</span> {
+                    <span className="font-medium">類型：</span> {
                       deleteGroup[0].specificDate 
-                        ? `Ngày cụ thể (${new Date(deleteGroup[0].specificDate).toLocaleDateString('vi-VN')})`
+                        ? `特定日期（${new Date(deleteGroup[0].specificDate).toLocaleDateString('zh-TW')}）`
                         : deleteGroup[0].isWeekend 
-                          ? 'Cuối tuần'
-                          : 'Tất cả ngày'
+                          ? '週末'
+                          : '全部日期'
                     }
                   </div>
                   <div>
-                    <span className="font-medium">Số khung giờ:</span> {deleteGroup.length}
+                    <span className="font-medium">時段數量：</span> {deleteGroup.length}
                   </div>
                   <div>
-                    <span className="font-medium">Số lượng tối đa:</span> {deleteGroup[0].maxBookings}
+                    <span className="font-medium">最大數量：</span> {deleteGroup[0].maxBookings}
                   </div>
                   <div>
-                    <span className="font-medium">Trạng thái:</span> {deleteGroup[0].isActive ? 'Hoạt động' : 'Tạm dừng'}
+                    <span className="font-medium">狀態：</span> {deleteGroup[0].isActive ? '啟用' : '停用'}
                   </div>
                 </div>
               </div>
@@ -965,7 +965,7 @@ const TimeSlotsManagement = () => {
                 }}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
-                Hủy
+                取消
               </Button>
               <Button 
                 type="button"
@@ -982,12 +982,12 @@ const TimeSlotsManagement = () => {
                 {deleteMutation.isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang xóa...
+                    刪除中...
                   </>
                 ) : (
                   <>
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Xóa quy tắc
+                    刪除規則
                   </>
                 )}
               </Button>

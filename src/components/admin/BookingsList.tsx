@@ -113,8 +113,8 @@ const BookingsList = () => {
     } catch (error) {
       console.error('Fetch bookings error:', error)
       toast({
-        title: "Lỗi",
-        description: "Không thể tải danh sách đặt lịch",
+        title: "錯誤",
+        description: "無法載入預約列表",
         variant: "destructive"
       })
     } finally {
@@ -142,14 +142,14 @@ const BookingsList = () => {
     try {
       await api.put(`/bookings/${id}/status`, { status })
       toast({
-        title: "Cập nhật thành công",
-        description: "Trạng thái đặt lịch đã được cập nhật"
+        title: "更新成功",
+        description: "預約狀態已更新"
       })
       fetchBookings()
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể cập nhật trạng thái",
+        title: "錯誤",
+        description: "無法更新狀態",
         variant: "destructive"
       })
     }
@@ -163,8 +163,8 @@ const BookingsList = () => {
         cancellationReason
       })
       toast({
-        title: "Hủy thành công",
-        description: "Đặt lịch đã được hủy và email thông báo đã được gửi"
+        title: "取消成功",
+        description: "預約已取消並已寄出通知郵件"
       })
       setShowCancelDialog(false)
       setSelectedBooking(null)
@@ -172,8 +172,8 @@ const BookingsList = () => {
       fetchBookings()
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Không thể hủy đặt lịch",
+        title: "錯誤",
+        description: "無法取消預約",
         variant: "destructive"
       })
     }
@@ -181,10 +181,10 @@ const BookingsList = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { label: 'Chờ xác nhận', variant: 'secondary' as const },
-      confirmed: { label: 'Đã xác nhận', variant: 'default' as const },
-      cancelled: { label: 'Đã hủy', variant: 'destructive' as const },
-      completed: { label: 'Hoàn thành', variant: 'outline' as const }
+      pending: { label: '待確認', variant: 'secondary' as const },
+      confirmed: { label: '已確認', variant: 'default' as const },
+      cancelled: { label: '已取消', variant: 'destructive' as const },
+      completed: { label: '已完成', variant: 'outline' as const }
     }
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
@@ -263,9 +263,9 @@ const BookingsList = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
           <Calendar className="h-8 w-8 text-orange-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Quản lý đặt lịch</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">預約管理</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Xem và quản lý tất cả đặt lịch tư vấn của khách hàng
+          檢視並管理所有客戶的諮詢預約
         </p>
         
       </div>
@@ -273,16 +273,16 @@ const BookingsList = () => {
       {/* Filters */}
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 rounded-t-lg">
-          <CardTitle className="text-xl text-gray-800">Bộ lọc tìm kiếm</CardTitle>
+          <CardTitle className="text-xl text-gray-800">搜尋篩選</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid md:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Tìm kiếm</label>
+              <label className="text-sm font-medium text-gray-700">搜尋</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Tên, email khách hàng..."
+                  placeholder="姓名、客戶 Email..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
@@ -291,7 +291,7 @@ const BookingsList = () => {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Ngày</label>
+              <label className="text-sm font-medium text-gray-700">日期</label>
               <Input
                 type="date"
                 value={dateFilter}
@@ -300,7 +300,7 @@ const BookingsList = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Số lượng hiển thị</label>
+              <label className="text-sm font-medium text-gray-700">每頁顯示數量</label>
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                 <SelectTrigger className="border-gray-300 focus:border-orange-500 focus:ring-orange-500">
                   <SelectValue />
@@ -321,7 +321,7 @@ const BookingsList = () => {
                 className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 <X className="h-4 w-4 mr-2" />
-                Xóa bộ lọc
+                清除篩選
               </Button>
             </div>
           </div>
@@ -332,7 +332,7 @@ const BookingsList = () => {
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 rounded-t-lg">
           <div className="text-center">
-            <CardTitle className="text-xl text-gray-800">Danh sách đặt lịch</CardTitle>
+            <CardTitle className="text-xl text-gray-800">預約列表</CardTitle>
             <div className="mt-1 flex flex-col items-start justify-start gap-2 text-gray-600">
               {/* Row 1: Range badges */}
               <div className="inline-flex items-start justify-start gap-2">
@@ -341,24 +341,24 @@ const BookingsList = () => {
                   onClick={() => switchRange('last7')}
                   className={`px-3 py-1 rounded-full text-xs border ${rangeFilter === 'last7' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
                 >
-                  7 ngày gần đây
+                  最近 7 天
                 </button>
                 <button
                   type="button"
                   onClick={() => switchRange('all')}
                   className={`px-3 py-1 rounded-full text-xs border ${rangeFilter === 'all' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
                 >
-                  Tất cả
+                  全部
                 </button>
               </div>
               {/* Row 2: Status badges */}
               <div className="inline-flex items-center gap-2">
                 {[
-                  { key: 'all', label: 'Tất cả' },
-                  { key: 'pending', label: 'Chờ xác nhận' },
-                  { key: 'confirmed', label: 'Đã xác nhận' },
-                  { key: 'cancelled', label: 'Đã hủy' },
-                  { key: 'completed', label: 'Hoàn thành' },
+                  { key: 'all', label: '全部' },
+                  { key: 'pending', label: '待確認' },
+                  { key: 'confirmed', label: '已確認' },
+                  { key: 'cancelled', label: '已取消' },
+                  { key: 'completed', label: '已完成' },
                 ].map((s) => (
                   <button
                     key={s.key}
@@ -377,25 +377,25 @@ const BookingsList = () => {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Đang tải danh sách đặt lịch...</p>
+              <p className="mt-4 text-gray-600">正在載入預約列表...</p>
             </div>
           ) : bookings.length === 0 ? (
               <div className="text-center py-12">
               <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Không có đặt lịch</h3>
-                <p className="text-gray-500">Không tìm thấy đặt lịch nào phù hợp với bộ lọc</p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">沒有預約</h3>
+                <p className="text-gray-500">找不到符合篩選條件的預約</p>
             </div>
           ) : (
             <div className="space-y-4">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[200px]">Khách hàng</TableHead>
-                    <TableHead className="w-[150px]">Liên hệ</TableHead>
-                    <TableHead className="w-[120px]">Ngày đặt</TableHead>
-                    <TableHead className="w-[100px]">Giờ</TableHead>
-                    <TableHead className="w-[120px]">Trạng thái</TableHead>
-                    <TableHead className="w-[200px]">Thao tác</TableHead>
+                    <TableHead className="w-[200px]">客戶</TableHead>
+                    <TableHead className="w-[150px]">聯絡方式</TableHead>
+                    <TableHead className="w-[120px]">預約日期</TableHead>
+                    <TableHead className="w-[100px]">時間</TableHead>
+                    <TableHead className="w-[120px]">狀態</TableHead>
+                    <TableHead className="w-[200px]">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -434,7 +434,7 @@ const BookingsList = () => {
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4 text-gray-500" />
                           <span className="text-sm">
-                            {new Date(booking.bookingDate).toLocaleDateString('vi-VN')}
+                            {new Date(booking.bookingDate).toLocaleDateString('zh-TW')}
                           </span>
                         </div>
                       </TableCell>
@@ -469,7 +469,7 @@ const BookingsList = () => {
                                 className="h-8 px-2 bg-green-600 hover:bg-green-700 text-xs"
                               >
                                 <CheckCircle className="h-3 w-3 mr-1" />
-                                Xác nhận
+                                確認
                               </Button>
                               <Button
                                 size="sm"
@@ -478,7 +478,7 @@ const BookingsList = () => {
                                 className="h-8 px-2 border-red-300 text-red-700 hover:bg-red-50 text-xs"
                               >
                                 <XCircle className="h-3 w-3 mr-1" />
-                                Hủy
+                                取消
                               </Button>
                             </>
                           )}
@@ -491,7 +491,7 @@ const BookingsList = () => {
                                 className="h-8 px-2 bg-blue-600 hover:bg-blue-700 text-xs"
                               >
                                 <CheckCircle className="h-3 w-3 mr-1" />
-                                Hoàn thành
+                                完成
                               </Button>
                               <Button
                                 size="sm"
@@ -500,7 +500,7 @@ const BookingsList = () => {
                                 className="h-8 px-2 border-red-300 text-red-700 hover:bg-red-50 text-xs"
                               >
                                 <XCircle className="h-3 w-3 mr-1" />
-                                Hủy
+                                取消
                               </Button>
                             </>
                           )}
@@ -515,8 +515,8 @@ const BookingsList = () => {
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="text-sm text-gray-600">
                   {rangeFilter === 'last7'
-                    ? `Tổng ${totalItems} kết quả trong 7 ngày gần đây (đã xác nhận)`
-                    : `Hiển thị ${((currentPage - 1) * pageSize) + 1} đến ${Math.min(currentPage * pageSize, totalItems)} trong tổng số ${totalItems} kết quả`}
+                    ? `最近 7 天共 ${totalItems} 筆結果（已確認）`
+                    : `顯示第 ${((currentPage - 1) * pageSize) + 1} - ${Math.min(currentPage * pageSize, totalItems)} 筆／共 ${totalItems} 筆`}
                 </div>
                 {rangeFilter === 'last7' ? null : (
                 <div className="flex items-center gap-2">
@@ -596,7 +596,7 @@ const BookingsList = () => {
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Chi tiết đặt lịch</DialogTitle>
+            <DialogTitle className="text-xl font-bold">預約詳情</DialogTitle>
           </DialogHeader>
           
           {selectedBooking && (
@@ -604,7 +604,7 @@ const BookingsList = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Thông tin khách hàng</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">客戶資訊</h3>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-gray-500" />
@@ -626,18 +626,18 @@ const BookingsList = () => {
                 
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Thông tin đặt lịch</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">預約資訊</h3>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-500" />
-                        <span>{new Date(selectedBooking.bookingDate).toLocaleDateString('vi-VN')}</span>
+                        <span>{new Date(selectedBooking.bookingDate).toLocaleDateString('zh-TW')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-500" />
                         <span>{selectedBooking.timeSlot}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Trạng thái:</span>
+                        <span className="text-sm font-medium">狀態：</span>
                         {getStatusBadge(selectedBooking.status)}
                       </div>
                     </div>
@@ -647,10 +647,10 @@ const BookingsList = () => {
 
               {selectedBooking.customFields && selectedBooking.customFields.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Thông tin bổ sung</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">補充資訊</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {selectedBooking.customFields.map((field, index) => {
-                      const label = customFieldLabelsById[field.fieldId] || field.fieldName || 'Trường'
+                      const label = customFieldLabelsById[field.fieldId] || field.fieldName || '欄位'
                       return (
                         <div key={index} className="p-3 bg-gray-50 rounded-lg">
                           <span className="font-medium text-gray-700">{label}:</span>
@@ -664,26 +664,26 @@ const BookingsList = () => {
 
               {selectedBooking.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Ghi chú</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">備註</h3>
                   <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedBooking.notes}</p>
                 </div>
               )}
 
               {selectedBooking.status === 'cancelled' && (
                 <div className="p-4 bg-red-50 rounded-lg">
-                  <h3 className="text-lg font-semibold text-red-700 mb-2">Lý do hủy</h3>
+                  <h3 className="text-lg font-semibold text-red-700 mb-2">取消原因</h3>
                   {selectedBooking.cancellationReason ? (
                     <p className="text-red-600">{selectedBooking.cancellationReason}</p>
                   ) : (
-                    <p className="text-red-600">Không có lý do</p>
+                    <p className="text-red-600">無原因</p>
                   )}
                   <div className="text-sm text-red-500 mt-2 space-y-1">
                     {selectedBooking.cancelledAt && (
-                      <p>Hủy lúc: {new Date(selectedBooking.cancelledAt).toLocaleString('vi-VN')}</p>
+                      <p>取消時間：{new Date(selectedBooking.cancelledAt).toLocaleString('zh-TW')}</p>
                     )}
                     {selectedBooking.cancelledBy && (
                       <p>
-                        Người hủy: {
+                        取消者：{
                           typeof selectedBooking.cancelledBy === 'string'
                             ? selectedBooking.cancelledBy
                             : `${selectedBooking.cancelledBy.name || 'N/A'}${selectedBooking.cancelledBy.email ? ` (${selectedBooking.cancelledBy.email})` : ''}`
@@ -700,7 +700,7 @@ const BookingsList = () => {
                   onClick={() => setShowDetailsDialog(false)}
                   className="border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
-                  Đóng
+                  關閉
                 </Button>
               </div>
             </div>
@@ -712,7 +712,7 @@ const BookingsList = () => {
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Xác nhận đặt lịch</DialogTitle>
+            <DialogTitle className="text-xl font-bold">確認預約</DialogTitle>
           </DialogHeader>
           
           {selectedBooking && (
@@ -720,23 +720,23 @@ const BookingsList = () => {
               <div className="p-4 bg-green-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium text-green-800">Xác nhận đặt lịch</span>
+                  <span className="font-medium text-green-800">確認預約</span>
                 </div>
                 <p className="text-green-700">
-                  Bạn có chắc chắn muốn xác nhận đặt lịch của <strong>{selectedBooking.customerName}</strong>?
+                  您確定要確認 <strong>{selectedBooking.customerName}</strong> 的預約嗎？
                 </p>
                 <p className="text-sm text-green-600 mt-2">
-                  Email xác nhận sẽ được tự động gửi đến khách hàng.
+                  系統將自動寄送確認郵件給客戶。
                 </p>
               </div>
               
               <div className="p-3 bg-gray-50 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Thông tin đặt lịch:</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">預約資訊：</h4>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <div><strong>Khách hàng:</strong> {selectedBooking.customerName}</div>
+                  <div><strong>客戶：</strong> {selectedBooking.customerName}</div>
                   <div><strong>Email:</strong> {selectedBooking.customerEmail}</div>
-                  <div><strong>Ngày:</strong> {new Date(selectedBooking.bookingDate).toLocaleDateString('vi-VN')}</div>
-                  <div><strong>Giờ:</strong> {selectedBooking.timeSlot}</div>
+                  <div><strong>日期：</strong> {new Date(selectedBooking.bookingDate).toLocaleDateString('zh-TW')}</div>
+                  <div><strong>時間：</strong> {selectedBooking.timeSlot}</div>
                 </div>
               </div>
               
@@ -749,13 +749,13 @@ const BookingsList = () => {
                   }}
                   className="border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
-                  Hủy
+                  取消
                 </Button>
                 <Button
                   onClick={confirmBooking}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  Xác nhận
+                  確認
                 </Button>
               </div>
             </div>
@@ -767,7 +767,7 @@ const BookingsList = () => {
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Hủy đặt lịch</DialogTitle>
+            <DialogTitle className="text-xl font-bold">取消預約</DialogTitle>
           </DialogHeader>
           
           {selectedBooking && (
@@ -775,20 +775,20 @@ const BookingsList = () => {
               <div className="p-4 bg-red-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertCircle className="h-5 w-5 text-red-600" />
-                  <span className="font-medium text-red-800">Xác nhận hủy đặt lịch</span>
+                  <span className="font-medium text-red-800">確認取消預約</span>
                 </div>
                 <p className="text-red-700">
-                  Bạn có chắc chắn muốn hủy đặt lịch của <strong>{selectedBooking.customerName}</strong>?
+                  您確定要取消 <strong>{selectedBooking.customerName}</strong> 的預約嗎？
                 </p>
                 <p className="text-sm text-red-600 mt-2">
-                  Email thông báo hủy lịch sẽ được gửi đến khách hàng.
+                  系統將寄送取消通知郵件給客戶。
                 </p>
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Lý do hủy (tùy chọn)</label>
+                <label className="text-sm font-medium text-gray-700">取消原因（選填）</label>
                 <Textarea
-                  placeholder="Nhập lý do hủy..."
+                  placeholder="請輸入取消原因..."
                   value={cancellationReason}
                   onChange={(e) => setCancellationReason(e.target.value)}
                   rows={3}
@@ -806,13 +806,13 @@ const BookingsList = () => {
                   }}
                   className="border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
-                  Hủy
+                  取消
                 </Button>
                 <Button
                   onClick={cancelBooking}
                   className="bg-red-600 hover:bg-red-700"
                 >
-                  Xác nhận hủy
+                  確認取消
                 </Button>
               </div>
             </div>
