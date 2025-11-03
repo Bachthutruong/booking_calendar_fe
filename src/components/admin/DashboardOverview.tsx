@@ -57,7 +57,7 @@ const DashboardOverview = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">Tổng quan hệ thống</h2>
+        <h2 className="text-3xl font-bold">系統總覽</h2>
         <p className="text-gray-600">預約系統的統計與總覽資訊</p>
       </div>
 
@@ -78,7 +78,7 @@ const DashboardOverview = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chờ xác nhận</CardTitle>
+            <CardTitle className="text-sm font-medium">待確認</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -110,7 +110,7 @@ const DashboardOverview = () => {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTimeSlots}</div>
             <p className="text-xs text-muted-foreground">
-              Tổng số khung giờ
+              總時段數
             </p>
           </CardContent>
         </Card>
@@ -144,7 +144,7 @@ const DashboardOverview = () => {
                       booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
-                      {booking.status === 'pending' ? 'Chờ xác nhận' :
+                      {booking.status === 'pending' ? '待確認' :
                        booking.status === 'confirmed' ? '已確認' :
                        booking.status === 'cancelled' ? '已取消' : '已完成'}
                     </span>

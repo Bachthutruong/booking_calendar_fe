@@ -83,8 +83,8 @@ const DateSelectorWithTimeSlots = ({ onDateSelect, onNext }: DateSelectorWithTim
   }
 
   const months = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+    '1 月', '2 月', '3 月', '4 月', '5 月', '6 月',
+    '7 月', '8 月', '9 月', '10 月', '11 月', '12 月'
   ]
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i)
@@ -277,7 +277,7 @@ const DateSelectorWithTimeSlots = ({ onDateSelect, onNext }: DateSelectorWithTim
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-green-100 rounded-full"></div>
-                    <span className="text-gray-600">Có khung giờ</span>
+                    <span className="text-gray-600">有可用時段</span>
                   </div>
                 </div>
                 <div className="text-gray-500">
@@ -326,7 +326,7 @@ const DateSelectorWithTimeSlots = ({ onDateSelect, onNext }: DateSelectorWithTim
                     onClick={handleNext} 
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
                   >
-                    Tiếp tục
+                    繼續
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -370,7 +370,7 @@ const DateSelectorWithTimeSlots = ({ onDateSelect, onNext }: DateSelectorWithTim
                     <span className="text-blue-600 text-sm">🕐</span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-800">Xem khung giờ trực tiếp</p>
+                    <p className="font-medium text-gray-800">直接查看時段</p>
                     <p className="text-sm text-gray-600">可用時段會直接顯示在行事曆上</p>
                   </div>
                 </div>
