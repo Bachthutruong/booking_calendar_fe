@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { bookingAPI } from '@/lib/api'
 import { formatTime, formatTimeRange } from '@/lib/utils'
-import { Clock, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react'
+import { Clock, ArrowLeft, CheckCircle } from 'lucide-react'
 
 interface TimeSlot {
   id: string
@@ -21,7 +21,7 @@ interface TimeSlotSelectorProps {
   onNext: () => void
 }
 
-const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: TimeSlotSelectorProps) => {
+const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack }: TimeSlotSelectorProps) => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('')
 
   const { data: timeSlotsData, isLoading } = useQuery(
@@ -37,14 +37,33 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
     onTimeSlotSelect(timeSlot)
   }
 
-  const handleNext = () => {
-    if (selectedTimeSlot) {
-      onNext()
-    }
-  }
+  // const handleNext = () => {
+  //   if (selectedTimeSlot) {
+  //     onNext()
+  //   }
+  // }
 
   const timeSlots = timeSlotsData?.data.timeSlots || []
   const availableSlots = timeSlots.filter((s: TimeSlot) => s.currentBookings < s.maxBookings)
+
+  // Deduplicate by start-end time, keep the one with the most remaining capacity
+  const uniqueAvailableSlots: TimeSlot[] = (() => {
+    const map = new Map<string, TimeSlot>()
+    for (const slot of availableSlots) {
+      const key = `${slot.startTime}-${slot.endTime}`
+      const existing = map.get(key)
+      if (!existing) {
+        map.set(key, slot)
+      } else {
+        const remaining = slot.maxBookings - slot.currentBookings
+        const existingRemaining = existing.maxBookings - existing.currentBookings
+        if (remaining > existingRemaining) {
+          map.set(key, slot)
+        }
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.startTime.localeCompare(b.startTime))
+  })()
 
   return (
     <div className="max-w-full mx-auto">
@@ -56,14 +75,14 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
         <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
           為 <span className="font-semibold text-blue-600">{selectedDate ? new Date(selectedDate).toLocaleDateString('zh-TW') : 'N/A'}</span> 選擇合適的時段
         </p>
-        <Button 
+        {/* <Button 
           variant="outline" 
           onClick={onBack}
           className="border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           選擇其他日期
-        </Button>
+        </Button> */}
       </div>
 
       <div>
@@ -73,7 +92,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
             <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
               <CardTitle className="text-center text-xl text-gray-800">可用時段</CardTitle>
               <CardDescription className="text-center text-gray-600">
-                {availableSlots.length} 個可用時段
+                {uniqueAvailableSlots.length} 個可用時段
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
@@ -82,7 +101,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
                   <p className="mt-4 text-gray-600">正在載入時段...</p>
                 </div>
-              ) : availableSlots.length === 0 ? (
+              ) : uniqueAvailableSlots.length === 0 ? (
                 <div className="text-center py-12">
                   <Clock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-700 mb-2">沒有可用時段</h3>
@@ -95,7 +114,7 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
               ) : (
                 <div>
                   <div className="flex flex-wrap gap-3">
-                    {availableSlots.map((slot: TimeSlot) => {
+                    {uniqueAvailableSlots.map((slot: TimeSlot) => {
                       const isSelected = selectedTimeSlot === `${slot.startTime}-${slot.endTime}`
                       const baseClasses = 'px-4 py-2 rounded-full text-sm border transition-all duration-200'
                       const selectableClasses = isSelected
@@ -118,14 +137,14 @@ const TimeSlotSelector = ({ selectedDate, onTimeSlotSelect, onBack, onNext }: Ti
 
                   {/* Actions */}
                   <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
-                    <Button 
+                    {/* <Button 
                       onClick={handleNext} 
                       disabled={!selectedTimeSlot}
                       className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                     >
                       繼續
                       <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    </Button> */}
                     <Button 
                       variant="outline"
                       onClick={onBack}

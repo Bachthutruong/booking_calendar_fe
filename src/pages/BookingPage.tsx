@@ -83,7 +83,6 @@ const BookingPage = () => {
         return (
           <DateSelector
             onDateSelect={handleDateSelect}
-            onNext={() => setStep('time')}
           />
         )
       case 'time':

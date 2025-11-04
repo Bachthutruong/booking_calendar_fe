@@ -12,16 +12,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { adminAPI } from '@/lib/api'
 import { Plus, Edit, Trash2, Clock, Settings, Globe, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 
-interface TimeSlot {
-  _id: string
-  dayOfWeek: number
+interface TimeRange {
   startTime: string
   endTime: string
-  isActive: boolean
-  isWeekend: boolean
-  specificDate?: string
   maxBookings: number
-  currentBookings: number
+}
+
+interface TimeSlotRule {
+  _id: string
+  ruleType: 'all' | 'weekday' | 'specific'
+  dayOfWeek?: number
+  specificDate?: string
+  timeRanges: TimeRange[]
+  isActive: boolean
 }
 
 const TimeSlotsManagement = () => {
@@ -29,8 +32,8 @@ const TimeSlotsManagement = () => {
   const queryClient = useQueryClient()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [deleteGroup, setDeleteGroup] = useState<TimeSlot[] | null>(null)
-  const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null)
+  const [deleteRule, setDeleteRule] = useState<TimeSlotRule | null>(null)
+  const [editingRule, setEditingRule] = useState<TimeSlotRule | null>(null)
   const [activeFilter, setActiveFilter] = useState<'all' | 'specific' | 'weekday' | 'allDays'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -74,7 +77,7 @@ const TimeSlotsManagement = () => {
       onSuccess: () => {
         queryClient.invalidateQueries('timeSlots')
         toast({ title: "成功", description: "更新時段成功" })
-        setEditingSlot(null)
+        setEditingRule(null)
         setIsDialogOpen(false)
         resetForm()
       },
@@ -94,29 +97,13 @@ const TimeSlotsManagement = () => {
       onSuccess: () => {
         queryClient.invalidateQueries('timeSlots')
         toast({ title: "成功", description: "刪除時段成功" })
+        setIsDeleteDialogOpen(false)
+        setDeleteRule(null)
       },
       onError: (error: any) => {
         toast({
           title: "錯誤",
           description: error.response?.data?.message || "發生錯誤",
-          variant: "destructive"
-        })
-      }
-    }
-  )
-
-  // Silent delete mutation for edit operations
-  const silentDeleteMutation = useMutation(
-    (id: string) => adminAPI.deleteTimeSlot(id),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('timeSlots')
-        // No toast for silent delete
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Lỗi",
-          description: error.response?.data?.message || "Có lỗi xảy ra",
           variant: "destructive"
         })
       }
@@ -133,6 +120,7 @@ const TimeSlotsManagement = () => {
       isActive: true,
       closed: false
     })
+    setEditingRule(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,159 +141,70 @@ const TimeSlotsManagement = () => {
       timeSlots: timeSlotList,
       specificDate: formData.type === 'specific' ? formData.specificDate : undefined,
       dayOfWeek: formData.type === 'weekday' ? formData.dayOfWeek : undefined,
-      maxBookings: formData.closed ? 0 : formData.maxBookings,
+      maxBookings: formData.maxBookings,
       isActive: formData.isActive
     }
 
-    if (editingSlot) {
-      // Khi edit, cần xóa tất cả slots cũ trong nhóm và tạo lại
-      const allSlotsInGroup = timeSlots.filter((s: TimeSlot) => {
-        if (editingSlot.specificDate) {
-          return s.specificDate === editingSlot.specificDate && s.maxBookings === editingSlot.maxBookings && s.isActive === editingSlot.isActive
-        } else {
-          return !s.specificDate && s.dayOfWeek === editingSlot.dayOfWeek && s.maxBookings === editingSlot.maxBookings && s.isActive === editingSlot.isActive
-        }
-      })
-      
-      // Xóa tất cả slots cũ trước (silent delete)
-      const deletePromises = allSlotsInGroup.map((slot: TimeSlot) => 
-        silentDeleteMutation.mutateAsync(slot._id)
-      )
-      
-      try {
-        await Promise.all(deletePromises)
-        // Sau khi xóa xong, tạo lại với dữ liệu mới
-        createMutation.mutate(submitData)
-      } catch (error) {
-        toast({
-          title: "錯誤",
-          description: "更新時段時發生錯誤",
-          variant: "destructive"
-        })
-      }
+    if (editingRule) {
+      updateMutation.mutate({ id: editingRule._id, data: submitData })
     } else {
       createMutation.mutate(submitData)
     }
   }
 
-  const handleEdit = (slot: TimeSlot) => {
-    setEditingSlot(slot)
+  const handleEdit = (rule: TimeSlotRule) => {
+    setEditingRule(rule)
     
-    // Tìm tất cả khung giờ trong cùng nhóm để hiển thị đầy đủ
-    const allSlotsInGroup = timeSlots.filter((s: TimeSlot) => {
-      if (slot.specificDate) {
-        return s.specificDate === slot.specificDate && s.maxBookings === slot.maxBookings && s.isActive === slot.isActive
-      } else {
-        // Nhóm theo cùng dayOfWeek cho các quy tắc theo thứ
-        return !s.specificDate && s.dayOfWeek === slot.dayOfWeek && s.maxBookings === slot.maxBookings && s.isActive === slot.isActive
-      }
-    })
-    
-    // Tạo chuỗi khung giờ từ unique slots trong nhóm
-    const uniqueTimeSlots = allSlotsInGroup.reduce((acc: string[], s: TimeSlot) => {
-      const timeSlot = `${s.startTime}-${s.endTime}`
-      if (!acc.includes(timeSlot)) {
-        acc.push(timeSlot)
-      }
-      return acc
-    }, [])
-    
-    const timeSlotsString = uniqueTimeSlots.join(',')
-    
-    // Format specific date for input field (YYYY-MM-DD format)
-    const formattedDate = slot.specificDate ? new Date(slot.specificDate).toISOString().split('T')[0] : ''
-    
-    const isClosedGroup = allSlotsInGroup.length > 0 && allSlotsInGroup.every((s: TimeSlot) => s.maxBookings === 0)
+    // Build time slots string from timeRanges
+    const timeSlotsString = rule.timeRanges
+      .map((r: TimeRange) => `${r.startTime}-${r.endTime}`)
+      .join(',')
+
+    const isClosed = rule.timeRanges.length === 0
+    const maxBookings = rule.timeRanges.length > 0 ? rule.timeRanges[0].maxBookings : 1
 
     setFormData({
-      type: slot.specificDate ? 'specific' : 'weekday',
+      type: rule.ruleType,
       timeSlots: timeSlotsString,
-      specificDate: formattedDate,
-      dayOfWeek: slot.dayOfWeek,
-      maxBookings: slot.maxBookings,
-      isActive: slot.isActive,
-      closed: isClosedGroup
+      specificDate: rule.specificDate ? new Date(rule.specificDate).toISOString().split('T')[0] : '',
+      dayOfWeek: rule.dayOfWeek ?? 1,
+      maxBookings,
+      isActive: rule.isActive,
+      closed: isClosed
     })
     setIsDialogOpen(true)
   }
 
   const handleCreate = () => {
-    setEditingSlot(null)
+    setEditingRule(null)
     resetForm()
     setIsDialogOpen(true)
   }
 
+  const timeSlots: TimeSlotRule[] = timeSlotsData?.data.timeSlots || []
 
-
-
-
-  const timeSlots = timeSlotsData?.data.timeSlots || []
-
-  // Group slots by their configuration (same type, same settings)
-  const groupSlotsByConfig = (slots: TimeSlot[]) => {
-    const groups: { [key: string]: TimeSlot[] } = {}
-
-    const nonSpecific = slots.filter(s => !s.specificDate)
-    // Build signature -> set of days mapping to detect all-days rules
-    const signatureToDays = new Map<string, Set<number>>()
-    nonSpecific.forEach(s => {
-      const sig = `${s.startTime}-${s.endTime}-${s.maxBookings}-${s.isActive}`
-      if (!signatureToDays.has(sig)) signatureToDays.set(sig, new Set<number>())
-      signatureToDays.get(sig)!.add(s.dayOfWeek)
-    })
-
-    slots.forEach(slot => {
-      let key = ''
-      if (slot.specificDate) {
-        key = `specific-${slot.specificDate}-${slot.maxBookings}-${slot.isActive}`
-      } else {
-        const sig = `${slot.startTime}-${slot.endTime}-${slot.maxBookings}-${slot.isActive}`
-        const days = signatureToDays.get(sig)
-        const isAllDays = days && days.size === 7
-        key = isAllDays
-          ? `allDays-${slot.maxBookings}-${slot.isActive}`
-          : `weekday-${slot.dayOfWeek}-${slot.maxBookings}-${slot.isActive}`
-      }
-
-      if (!groups[key]) {
-        groups[key] = []
-      }
-      groups[key].push(slot)
-    })
-
-    return Object.values(groups)
-  }
-
-  // Get grouped slots for counting
-  const allGroupedSlots = groupSlotsByConfig(timeSlots)
-  const specificGroupedSlots = allGroupedSlots.filter(group => group[0].specificDate)
-  const allDaysGroupedSlots = allGroupedSlots.filter(group => !group[0].specificDate && new Set(group.map(g => g.dayOfWeek)).size > 1)
-  const weekdayGroupedSlots = allGroupedSlots.filter(group => !group[0].specificDate && new Set(group.map(g => g.dayOfWeek)).size === 1)
-
-  // Filter grouped slots based on active filter
-  const getFilteredGroupedSlots = () => {
+  // Filter rules based on active filter
+  const getFilteredRules = () => {
     switch (activeFilter) {
       case 'specific':
-        return specificGroupedSlots
+        return timeSlots.filter(r => r.ruleType === 'specific')
       case 'weekday':
-        return weekdayGroupedSlots
-      case 'all':
-        return allGroupedSlots
+        return timeSlots.filter(r => r.ruleType === 'weekday')
       case 'allDays':
-        return allDaysGroupedSlots
+        return timeSlots.filter(r => r.ruleType === 'all')
       default:
-        return allGroupedSlots
+        return timeSlots
     }
   }
 
-  const filteredGroupedSlots = getFilteredGroupedSlots()
+  const filteredRules = getFilteredRules()
 
-  // Pagination logic for grouped slots
-  const totalItems = filteredGroupedSlots.length
+  // Pagination logic
+  const totalItems = filteredRules.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedGroupedSlots = filteredGroupedSlots.slice(startIndex, endIndex)
+  const paginatedRules = filteredRules.slice(startIndex, endIndex)
 
   // Reset to first page when filter changes
   const handleFilterChange = (filter: 'all' | 'specific' | 'weekday' | 'allDays') => {
@@ -313,18 +212,18 @@ const TimeSlotsManagement = () => {
     setCurrentPage(1)
   }
 
-  const renderTimeSlotTable = (groupedSlots: TimeSlot[][], title: string, icon: React.ReactNode, color: string) => {
-    if (groupedSlots.length === 0) return null
+  const renderTimeSlotTable = () => {
+    if (paginatedRules.length === 0) return null
 
     return (
       <Card className="shadow-lg border-0">
-        <CardHeader className={`bg-gradient-to-r ${color} rounded-t-lg`}>
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-t-lg">
           <div className="flex items-center gap-3">
-            {icon}
+            <Settings className="h-6 w-6 text-gray-600" />
             <div>
-              <CardTitle className="text-xl text-gray-800">{title}</CardTitle>
+              <CardTitle className="text-xl text-gray-800">時段規則</CardTitle>
               <CardDescription className="text-gray-600">
-                已設定 {groupedSlots.reduce((total, group) => total + group.length, 0)} 個時段，分為 {groupedSlots.length} 組
+                已設定 {filteredRules.length} 個規則
               </CardDescription>
             </div>
           </div>
@@ -335,115 +234,98 @@ const TimeSlotsManagement = () => {
               <TableRow>
                 <TableHead className="w-[120px]">類型</TableHead>
                 <TableHead className="w-[200px]">時段</TableHead>
-                <TableHead className="w/[150px]">特定日期</TableHead>
+                <TableHead className="w-[150px]">特定日期</TableHead>
                 <TableHead className="w-[120px]">數量</TableHead>
                 <TableHead className="w-[120px]">狀態</TableHead>
                 <TableHead className="w-[120px]">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {groupedSlots.map((group, groupIndex) => {
-                const firstSlot = group[0]
-                const isAllDaysGroup = !firstSlot.specificDate && new Set(group.map(s => s.dayOfWeek)).size === 7
-                
-                return (
-                  <TableRow key={groupIndex}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-600">
-                            {firstSlot.specificDate ? 'SP' : (isAllDaysGroup ? 'ALL' : ['CN','T2','T3','T4','T5','T6','T7'][firstSlot.dayOfWeek])}
-                          </span>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">
-                          {firstSlot.specificDate 
-                            ? `特定日期：${new Date(firstSlot.specificDate).toLocaleDateString('zh-TW')}`
-                            : isAllDaysGroup
-                              ? '全部日期（週一 - 週日）'
-                              : `依星期：${['週日','週一','週二','週三','週四','週五','週六'][firstSlot.dayOfWeek]}`}
+              {paginatedRules.map((rule) => (
+                <TableRow key={rule._id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-600">
+                          {rule.ruleType === 'specific' ? 'SP' : 
+                           rule.ruleType === 'all' ? 'ALL' : 
+                           ['CN','T2','T3','T4','T5','T6','T7'][rule.dayOfWeek || 0]}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {(() => {
-                          const allClosed = group.every(s => s.maxBookings === 0)
-                          if (allClosed) {
-                            return (
-                              <span className="text-sm text-gray-400">沒有時段</span>
-                            )
-                          }
-                          // Lấy unique time slots để tránh duplicate, loại bỏ sentinel 00:00-00:00
-                          const uniqueTimeSlots = group.reduce((acc: string[], slot) => {
-                            const timeSlot = `${slot.startTime}-${slot.endTime}`
-                            if (timeSlot === '00:00-00:00') return acc
-                            if (!acc.includes(timeSlot)) {
-                              acc.push(timeSlot)
-                            }
-                            return acc
-                          }, [])
-                          
-                          return uniqueTimeSlots.map((timeSlot, slotIndex) => (
-                            <Badge 
-                              key={slotIndex} 
-                              variant="outline" 
-                              className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
-                            >
-                              <Clock className="h-3 w-3 mr-1" />
-                              {timeSlot}
-                            </Badge>
-                          ))
-                        })()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                          {firstSlot.specificDate ? (
-                        <div className="flex items-center gap-2">
-                          <CalendarDays className="h-4 w-4 text-purple-500" />
-                          <span className="text-sm text-purple-700 font-medium">
-                            {new Date(firstSlot.specificDate).toLocaleDateString('zh-TW')}
-                          </span>
-                        </div>
+                      <span className="text-sm font-medium text-gray-900">
+                        {rule.ruleType === 'specific' 
+                          ? `特定日期：${new Date(rule.specificDate!).toLocaleDateString('zh-TW')}`
+                          : rule.ruleType === 'all'
+                          ? '全部日期（週一 - 週日）'
+                          : `依星期：${['週日','週一','週二','週三','週四','週五','週六'][rule.dayOfWeek || 0]}`}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {rule.timeRanges.length === 0 ? (
+                        <span className="text-sm text-gray-400">沒有時段</span>
                       ) : (
-                        <span className="text-sm text-gray-400">-</span>
+                        rule.timeRanges.map((range, idx) => (
+                          <Badge 
+                            key={idx} 
+                            variant="outline" 
+                            className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                          >
+                            <Clock className="h-3 w-3 mr-1" />
+                            {range.startTime}-{range.endTime}
+                          </Badge>
+                        ))
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm font-medium">
-                        {firstSlot.maxBookings}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={firstSlot.isActive ? "default" : "secondary"}>
-                        {firstSlot.isActive ? '啟用' : '停用'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {rule.specificDate ? (
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(firstSlot)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setDeleteGroup(group)
-                            setIsDeleteDialogOpen(true)
-                          }}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <CalendarDays className="h-4 w-4 text-purple-500" />
+                        <span className="text-sm text-purple-700 font-medium">
+                          {new Date(rule.specificDate).toLocaleDateString('zh-TW')}
+                        </span>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm font-medium">
+                      {rule.timeRanges.length > 0 ? rule.timeRanges[0].maxBookings : 0}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={rule.isActive ? "default" : "secondary"}>
+                      {rule.isActive ? '啟用' : '停用'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(rule)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setDeleteRule(rule)
+                          setIsDeleteDialogOpen(true)
+                        }}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
@@ -469,31 +351,9 @@ const TimeSlotsManagement = () => {
           <Plus className="h-4 w-4 mr-2" />
           建立新時段
         </Button>
-        <Button 
-          onClick={() => {
-            setFormData({ ...formData, type: 'weekday', dayOfWeek: 1 })
-            setIsDialogOpen(true)
-          }} 
-          variant="outline" 
-          className="border-green-300 text-green-700 hover:bg-green-50"
-        >
-          <CalendarDays className="h-4 w-4 mr-2" />
-          依星期設定
-        </Button>
-        <Button 
-          onClick={() => {
-            setFormData({ ...formData, type: 'specific' })
-            setIsDialogOpen(true)
-          }} 
-          variant="outline" 
-          className="border-purple-300 text-purple-700 hover:bg-purple-50"
-        >
-          <CalendarDays className="h-4 w-4 mr-2" />
-          設定特定日期
-        </Button>
       </div>
 
-      {/* Filter Badges - moved below Action Buttons to be above the table */}
+      {/* Filter Badges */}
       <div className="flex justify-start gap-4 mb-6">
         <Badge 
           variant={activeFilter === 'all' ? "default" : "outline"}
@@ -505,7 +365,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('all')}
         >
           <Globe className="h-4 w-4 mr-2" />
-          全部 ({allGroupedSlots.length})
+          全部 ({timeSlots.length})
         </Badge>
         <Badge 
           variant={activeFilter === 'specific' ? "default" : "outline"}
@@ -517,7 +377,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('specific')}
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          特定日期 ({specificGroupedSlots.length})
+          特定日期 ({timeSlots.filter(r => r.ruleType === 'specific').length})
         </Badge>
         <Badge 
           variant={activeFilter === 'weekday' ? "default" : "outline"}
@@ -529,7 +389,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('weekday')}
         >
           <CalendarDays className="h-4 w-4 mr-2" />
-          依星期 ({weekdayGroupedSlots.length})
+          依星期 ({timeSlots.filter(r => r.ruleType === 'weekday').length})
         </Badge>
         <Badge 
           variant={activeFilter === 'allDays' ? "default" : "outline"}
@@ -541,7 +401,7 @@ const TimeSlotsManagement = () => {
           onClick={() => handleFilterChange('allDays')}
         >
           <Globe className="h-4 w-4 mr-2" />
-          全部日期 ({allDaysGroupedSlots.length})
+          全部日期 ({timeSlots.filter(r => r.ruleType === 'all').length})
         </Badge>
       </div>
 
@@ -555,7 +415,7 @@ const TimeSlotsManagement = () => {
             </div>
           </CardContent>
         </Card>
-      ) : allGroupedSlots.length === 0 ? (
+      ) : timeSlots.length === 0 ? (
         <Card className="shadow-lg border-0">
           <CardContent className="p-12">
             <div className="text-center">
@@ -570,35 +430,7 @@ const TimeSlotsManagement = () => {
           </CardContent>
         </Card>
       ) : (
-        <div>
-          {(() => {
-            const getTitleAndIcon = () => {
-              switch (activeFilter) {
-                case 'specific':
-                  return {
-                    title: "特定日期（最高優先）",
-                    icon: <CalendarDays className="h-6 w-6 text-purple-600" />,
-                    color: "from-purple-50 to-pink-50"
-                  }
-                case 'weekday':
-                  return {
-                    title: "依星期規則",
-                    icon: <CalendarDays className="h-6 w-6 text-green-600" />,
-                    color: "from-green-50 to-emerald-50"
-                  }
-                default:
-                  return {
-                    title: "所有時段",
-                    icon: <Settings className="h-6 w-6 text-gray-600" />,
-                    color: "from-gray-50 to-slate-50"
-                  }
-              }
-            }
-            
-            const { title, icon, color } = getTitleAndIcon()
-            return renderTimeSlotTable(paginatedGroupedSlots, title, icon, color)
-          })()}
-        </div>
+        renderTimeSlotTable()
       )}
 
       {/* Pagination Controls */}
@@ -693,10 +525,10 @@ const TimeSlotsManagement = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {editingSlot ? '編輯時段' : '建立新時段'}
+              {editingRule ? '編輯時段' : '建立新時段'}
             </DialogTitle>
           </DialogHeader>
           
@@ -775,13 +607,13 @@ const TimeSlotsManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                  <SelectItem value="1">週一</SelectItem>
-                  <SelectItem value="2">週二</SelectItem>
-                  <SelectItem value="3">週三</SelectItem>
-                  <SelectItem value="4">週四</SelectItem>
-                  <SelectItem value="5">週五</SelectItem>
-                  <SelectItem value="6">週六</SelectItem>
-                  <SelectItem value="0">週日</SelectItem>
+                    <SelectItem value="1">週一</SelectItem>
+                    <SelectItem value="2">週二</SelectItem>
+                    <SelectItem value="3">週三</SelectItem>
+                    <SelectItem value="4">週四</SelectItem>
+                    <SelectItem value="5">週五</SelectItem>
+                    <SelectItem value="6">週六</SelectItem>
+                    <SelectItem value="0">週日</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -827,53 +659,51 @@ const TimeSlotsManagement = () => {
             </div>
 
             {!formData.closed && (
-            <div className="space-y-2">
-              <Label htmlFor="timeSlots" className="text-sm font-medium text-gray-700">
-                時段（以逗號分隔）
-              </Label>
-              <Input
-                id="timeSlots"
-                value={formData.timeSlots}
-                onChange={(e) => setFormData({ ...formData, timeSlots: e.target.value })}
-                placeholder="8:00-9:00,9:00-10:00,10:00-11:00"
-                // Cho phép để trống để biểu thị không có khung giờ
-                required={false}
-                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-              <p className="text-xs text-gray-500">
-                範例：8:00-9:00,9:00-10:00,10:00-11:00,14:00-15:00,15:00-16:00
-              </p>
-            </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="timeSlots" className="text-sm font-medium text-gray-700">
+                    時段（以逗號分隔）
+                  </Label>
+                  <Input
+                    id="timeSlots"
+                    value={formData.timeSlots}
+                    onChange={(e) => setFormData({ ...formData, timeSlots: e.target.value })}
+                    placeholder="8:00-9:00,9:00-10:00,10:00-11:00"
+                    required={false}
+                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500">
+                    範例：8:00-9:00,9:00-10:00,10:00-11:00,14:00-15:00,15:00-16:00
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="maxBookings" className="text-sm font-medium text-gray-700">
+                    每個時段的最大預約數
+                  </Label>
+                  <Input
+                    id="maxBookings"
+                    type="number"
+                    min="1"
+                    value={formData.maxBookings}
+                    onChange={(e) => setFormData({ ...formData, maxBookings: parseInt(e.target.value) || 1 })}
+                    required={!formData.closed}
+                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+              </>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="maxBookings" className="text-sm font-medium text-gray-700">
-                  每個時段的最大預約數
-                </Label>
-                <Input
-                  id="maxBookings"
-                  type="number"
-                  min="0"
-                  value={formData.maxBookings}
-                  onChange={(e) => setFormData({ ...formData, maxBookings: parseInt(e.target.value) })}
-                  required={!formData.closed}
-                  disabled={formData.closed}
-                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">狀態</Label>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">狀態</Label>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="text-sm text-gray-700">啟用時段</span>
-                </div>
+                <span className="text-sm text-gray-700">啟用時段</span>
               </div>
             </div>
 
@@ -897,7 +727,7 @@ const TimeSlotsManagement = () => {
                     處理中...
                   </>
                 ) : (
-                  editingSlot ? '更新' : '建立'
+                  editingRule ? '更新' : '建立'
                 )}
               </Button>
             </div>
@@ -929,27 +759,24 @@ const TimeSlotsManagement = () => {
               </div>
             </div>
 
-            {deleteGroup && (
+            {deleteRule && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-medium text-gray-800 mb-2">將被刪除的規則資訊：</h4>
                 <div className="space-y-2 text-sm text-gray-600">
                   <div>
                     <span className="font-medium">類型：</span> {
-                      deleteGroup[0].specificDate 
-                        ? `特定日期（${new Date(deleteGroup[0].specificDate).toLocaleDateString('zh-TW')}）`
-                        : deleteGroup[0].isWeekend 
-                          ? '週末'
-                          : '全部日期'
+                      deleteRule.ruleType === 'specific'
+                        ? `特定日期（${new Date(deleteRule.specificDate!).toLocaleDateString('zh-TW')}）`
+                        : deleteRule.ruleType === 'all'
+                        ? '全部日期'
+                        : `依星期：${['週日','週一','週二','週三','週四','週五','週六'][deleteRule.dayOfWeek || 0]}`
                     }
                   </div>
                   <div>
-                    <span className="font-medium">時段數量：</span> {deleteGroup.length}
+                    <span className="font-medium">時段數量：</span> {deleteRule.timeRanges.length}
                   </div>
                   <div>
-                    <span className="font-medium">最大數量：</span> {deleteGroup[0].maxBookings}
-                  </div>
-                  <div>
-                    <span className="font-medium">狀態：</span> {deleteGroup[0].isActive ? '啟用' : '停用'}
+                    <span className="font-medium">狀態：</span> {deleteRule.isActive ? '啟用' : '停用'}
                   </div>
                 </div>
               </div>
@@ -961,7 +788,7 @@ const TimeSlotsManagement = () => {
                 variant="outline" 
                 onClick={() => {
                   setIsDeleteDialogOpen(false)
-                  setDeleteGroup(null)
+                  setDeleteRule(null)
                 }}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
@@ -970,10 +797,8 @@ const TimeSlotsManagement = () => {
               <Button 
                 type="button"
                 onClick={() => {
-                  if (deleteGroup) {
-                    deleteGroup.forEach(slot => deleteMutation.mutate(slot._id))
-                    setIsDeleteDialogOpen(false)
-                    setDeleteGroup(null)
+                  if (deleteRule) {
+                    deleteMutation.mutate(deleteRule._id)
                   }
                 }}
                 disabled={deleteMutation.isLoading}
