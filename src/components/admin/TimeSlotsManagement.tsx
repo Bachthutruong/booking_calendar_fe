@@ -132,8 +132,11 @@ const TimeSlotsManagement = () => {
       .map(slot => slot.trim())
       .filter(slot => slot.includes('-'))
       .map(slot => {
-        const [start, end] = slot.split('-').map(t => t.trim())
-        return { startTime: start, endTime: end }
+        // Allow per-slot capacity syntax: HH:mm-HH:mm|N
+        const [timePart, capPart] = slot.split('|').map(s => s.trim())
+        const [start, end] = timePart.split('-').map(t => t.trim())
+        const parsedMax = capPart ? parseInt(capPart) : undefined
+        return { startTime: start, endTime: end, maxBookings: parsedMax }
       })
 
     const submitData: any = {
@@ -157,7 +160,7 @@ const TimeSlotsManagement = () => {
     
     // Build time slots string from timeRanges
     const timeSlotsString = rule.timeRanges
-      .map((r: TimeRange) => `${r.startTime}-${r.endTime}`)
+      .map((r: TimeRange) => `${r.startTime}-${r.endTime}|${r.maxBookings}`)
       .join(',')
 
     const isClosed = rule.timeRanges.length === 0
@@ -673,7 +676,7 @@ const TimeSlotsManagement = () => {
                     className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-500">
-                    範例：8:00-9:00,9:00-10:00,10:00-11:00,14:00-15:00,15:00-16:00
+                    範例：8:00-9:00|2,9:00-10:00|1,10:00-11:00|3（後綴 |數量 表示每時段容量；不填則使用下方數量）
                   </p>
                 </div>
 

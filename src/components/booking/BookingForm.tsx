@@ -65,7 +65,8 @@ const BookingForm = ({ selectedDate, selectedTimeSlot, onBack }: BookingFormProp
     (bookingData: { customFields: any[]; customerName: string; customerEmail: string; customerPhone?: string }) => bookingAPI.createBooking({
       ...bookingData,
       bookingDate: selectedDate,
-      timeSlot: selectedTimeSlot.split('-')[0] // Extract startTime from "startTime-endTime" format
+      // Send full timerange "HH:mm-HH:mm"; backend also supports just start time
+      timeSlot: selectedTimeSlot
     }),
     {
       onSuccess: (res) => {
