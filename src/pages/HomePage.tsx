@@ -21,6 +21,7 @@ const HomePage = () => {
   const navigate = useNavigate()
   const [footerConfig, setFooterConfig] = useState<any | null>(null)
   const [generalConfig, setGeneralConfig] = useState<any | null>(null)
+  const [showFooter, setShowFooter] = useState<boolean>(true)
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -28,8 +29,10 @@ const HomePage = () => {
         const res = await api.get('/system-config')
         setFooterConfig(res.data.configs?.footer || null)
         setGeneralConfig(res.data.configs?.general || null)
+        setShowFooter(res.data.configs?.footer?.showFooter !== false) // Default to true if not set
       } catch (e) {
         // ignore, UI will fallback to defaults
+        setShowFooter(true)
       }
     }
     fetchConfigs()
@@ -218,14 +221,15 @@ const HomePage = () => {
         </div>
       </main>
 
-      <Footer 
-        companyName={footerConfig?.companyName}
-        companyDescription={footerConfig?.companyDescription}
-        email={footerConfig?.email}
-        phone={footerConfig?.phone}
-        address={footerConfig?.address}
-        support={footerConfig?.support}
-      />
+      {showFooter && (
+        <Footer 
+          companyName={footerConfig?.companyName}
+          companyDescription={footerConfig?.companyDescription}
+          email={footerConfig?.email}
+          phone={footerConfig?.phone}
+          address={footerConfig?.address}
+        />
+      )}
     </div>
   )
 }

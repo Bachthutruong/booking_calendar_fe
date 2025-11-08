@@ -1,21 +1,37 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+// import { useNavigate } from 'react-router-dom'
+// import { Button } from '@/components/ui/button'
 import DateSelector from '@/components/booking/DateSelector'
 import TimeSlotSelector from '@/components/booking/TimeSlotSelector'
 import BookingForm from '@/components/booking/BookingForm'
 import Footer from '@/components/common/Footer'
-import { ArrowLeft, Calendar, Clock, User } from 'lucide-react'
+import { api } from '@/lib/api'
+import { Calendar, Clock } from 'lucide-react'
 
 const BookingPage = () => {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('')
   const [step, setStep] = useState<'date' | 'time' | 'form'>('date')
+  const [showFooter, setShowFooter] = useState<boolean>(true)
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  // Load footer config
+  useEffect(() => {
+    const fetchFooterConfig = async () => {
+      try {
+        const res = await api.get('/system-config/footer')
+        setShowFooter(res.data.config?.showFooter !== false) // Default to true if not set
+      } catch (e) {
+        // Default to showing footer if error
+        setShowFooter(true)
+      }
+    }
+    fetchFooterConfig()
   }, [])
 
   const handleDateSelect = (date: string) => {
@@ -39,21 +55,21 @@ const BookingPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const getStepInfo = () => {
-    switch (step) {
-      case 'date':
-        return { title: '選擇日期', icon: Calendar, description: '選擇您要預約的日期' }
-      case 'time':
-        return { title: '選擇時間', icon: Clock, description: '選擇合適的時段' }
-      case 'form':
-        return { title: '資訊', icon: User, description: '填寫聯絡資訊' }
-      default:
-        return { title: '', icon: Calendar, description: '' }
-    }
-  }
+  // const getStepInfo = () => {
+  //   switch (step) {
+  //     case 'date':
+  //       return { title: '選擇日期', icon: Calendar, description: '選擇您要預約的日期' }
+  //     case 'time':
+  //       return { title: '選擇時間', icon: Clock, description: '選擇合適的時段' }
+  //     case 'form':
+  //       return { title: '資訊', icon: User, description: '填寫聯絡資訊' }
+  //     default:
+  //       return { title: '', icon: Calendar, description: '' }
+  //   }
+  // }
 
-  const stepInfo = getStepInfo()
-  const StepIcon = stepInfo.icon
+  // const stepInfo = getStepInfo()
+  // const StepIcon = stepInfo.icon
 
   const renderSummaryBadges = () => {
     if (!selectedDate) return null
@@ -109,36 +125,8 @@ const BookingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-3">
-            <div className="flex items-center space-x-3">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/')}
-                className="text-gray-600 hover:text-gray-900 px-3 py-1.5"
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                首頁
-              </Button>
-              <div className="flex items-center space-x-2">
-                <div className="bg-blue-600 rounded-lg p-1.5">
-                  <StepIcon className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-base font-semibold text-gray-900">{stepInfo.title}</h1>
-                  <p className="text-xs text-gray-600">{stepInfo.description}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Progress indicator */}
-      <div className="bg-white/80 backdrop-blur-sm border-b">
+      {/* Progress indicator - Fixed at top */}
+      <div className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -188,7 +176,7 @@ const BookingPage = () => {
         {renderStep()}
       </main>
       
-      <Footer />
+      {showFooter && <Footer />}
     </div>
   )
 }

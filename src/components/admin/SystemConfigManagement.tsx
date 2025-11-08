@@ -211,6 +211,18 @@ const SystemConfigManagement = () => {
               <CardDescription>頁面底部顯示的資訊</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="flex items-center space-x-2 p-4 bg-gray-50 rounded-lg border">
+                <input
+                  type="checkbox"
+                  id="footer.showFooter"
+                  {...register('footer.showFooter')}
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+                <Label htmlFor="footer.showFooter" className="text-sm font-medium text-gray-700 cursor-pointer">
+                  顯示頁尾
+                </Label>
+                <p className="text-xs text-gray-500 ml-2">取消勾選以隱藏頁尾</p>
+              </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="footer.companyName">公司名稱</Label>

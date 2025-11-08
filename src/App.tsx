@@ -1,7 +1,7 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
-import HomePage from '@/pages/HomePage'
+// import HomePage from '@/pages/HomePage'
 import BookingPage from '@/pages/BookingPage'
 import BookingSuccessPage from '@/pages/BookingSuccessPage'
 import AdminLoginPage from '@/pages/AdminLoginPage'
@@ -13,7 +13,7 @@ function App() {
     <AuthProvider>
       <div className="min-h-screen bg-background">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Navigate to="/booking" replace />} />
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/booking/success" element={<BookingSuccessPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />

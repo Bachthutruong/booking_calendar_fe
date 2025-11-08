@@ -37,7 +37,7 @@ const BookingsList = () => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [statusFilter, setStatusFilter] = useState('confirmed')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [rangeFilter, setRangeFilter] = useState<'last7' | 'all'>('last7')
   const [dateFilter, setDateFilter] = useState('')
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null)
@@ -55,6 +55,7 @@ const BookingsList = () => {
   // Custom fields definitions for labeling
   const [customFieldLabelsById, setCustomFieldLabelsById] = useState<Record<string, string>>({})
   const [customFieldNamesById, setCustomFieldNamesById] = useState<Record<string, string>>({})
+  const [tableCustomFields, setTableCustomFields] = useState<Array<{_id: string, name: string, label: string, order: number}>>([])
 
   useEffect(() => {
     fetchBookings()
@@ -77,12 +78,28 @@ const BookingsList = () => {
         const defs = res.data?.customFields || []
         const byId: Record<string, string> = {}
         const nameById: Record<string, string> = {}
+        const tableFields: Array<{_id: string, name: string, label: string, order: number}> = []
+        
         defs.forEach((d: any) => {
           byId[d._id] = d.label
           nameById[d._id] = d.name
+          // Lấy tất cả các field có showInTable = true (bao gồm cả 3 field mặc định)
+          if (d.showInTable) {
+            tableFields.push({
+              _id: d._id,
+              name: d.name,
+              label: d.label,
+              order: d.order || 0
+            })
+          }
         })
+        
+        // Sắp xếp theo order
+        tableFields.sort((a, b) => a.order - b.order)
+        
         setCustomFieldLabelsById(byId)
         setCustomFieldNamesById(nameById)
+        setTableCustomFields(tableFields)
       } catch (e) {
         // Non-blocking
       }
@@ -95,7 +112,8 @@ const BookingsList = () => {
       setLoading(true)
       const params = new URLSearchParams()
       if (searchTerm) params.append('search', searchTerm)
-      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter)
+      // Luôn gửi status, kể cả khi là 'all' để backend xử lý đúng
+      if (statusFilter) params.append('status', statusFilter)
       params.append('range', rangeFilter)
       if (dateFilter) params.append('date', dateFilter)
       params.append('page', currentPage.toString())
@@ -205,10 +223,7 @@ const BookingsList = () => {
     setRangeFilter(range)
     // Reset pagination and filters appropriately
     setCurrentPage(1)
-    if (range === 'last7') {
-      // Force confirmed in last7 view
-      setStatusFilter('confirmed')
-    }
+    // Không force status khi chọn range, để người dùng có thể chọn status tự do
   }
 
   const resetFilters = () => {
@@ -387,67 +402,93 @@ const BookingsList = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">客戶</TableHead>
-                    <TableHead className="w-[150px]">聯絡方式</TableHead>
-                    <TableHead className="w-[120px]">預約日期</TableHead>
-                    <TableHead className="w-[100px]">時間</TableHead>
-                    <TableHead className="w-[120px]">狀態</TableHead>
-                    <TableHead className="w-[200px]">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bookings.map((booking) => (
-                    <TableRow key={booking._id} className="hover:bg-gray-50">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-gray-500" />
-                          <div>
-                            <div className="font-medium">{getDisplayName(booking) || '—'}</div>
-                            {booking.notes && (
-                              <div className="text-xs text-gray-500 truncate max-w-[150px]" title={booking.notes}>
-                                {booking.notes}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {/* Các cột động từ custom fields có showInTable = true */}
+                      {tableCustomFields.map((field) => (
+                        <TableHead key={field._id} className="w-[150px] min-w-[150px]">
+                          {field.label}
+                        </TableHead>
+                      ))}
+                      {/* Chỉ cột thao tác là fix cứng - sticky */}
+                      <TableHead className="w-[200px] min-w-[200px] sticky right-0 bg-white z-10 shadow-[2px_0_5px_rgba(0,0,0,0.1)] border-l border-gray-200">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bookings.map((booking) => (
+                      <TableRow key={booking._id} className="group">
+                        {/* Các cột động từ custom fields */}
+                        {tableCustomFields.map((field) => {
+                        let fieldValue: any = null
+                        
+                        // Tìm giá trị từ customFields
+                        const customField = booking.customFields?.find((f) => f.fieldId === field._id)
+                        if (customField) {
+                          fieldValue = customField.value
+                        } else {
+                          // Nếu không tìm thấy trong customFields, thử lấy từ booking trực tiếp
+                          // Cho 3 field mặc định
+                          if (field.name === 'customer_name' || field.name === 'user_name') {
+                            fieldValue = getDisplayName(booking)
+                          } else if (field.name === 'email') {
+                            fieldValue = getDisplayEmail(booking)
+                          } else if (field.name === 'customer_phone' || field.name === 'phone') {
+                            fieldValue = getCustomFieldValueByName(booking, 'customer_phone') || booking.customerPhone
+                          }
+                        }
+                        
+                        // Render theo loại field
+                        if (field.name === 'customer_name' || field.name === 'user_name') {
+                          return (
+                            <TableCell key={field._id}>
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4 text-gray-500" />
+                                <div>
+                                  <div className="font-medium">{fieldValue || '—'}</div>
+                                  {booking.notes && (
+                                    <div className="text-xs text-gray-500 truncate max-w-[150px]" title={booking.notes}>
+                                      {booking.notes}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1 text-sm">
-                            <Mail className="h-3 w-3 text-gray-400" />
-                            <span className="truncate max-w-[120px]" title={getDisplayEmail(booking)}>
-                              {getDisplayEmail(booking) || '—'}
-                            </span>
-                          </div>
-                          {booking.customerPhone && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <Phone className="h-3 w-3 text-gray-400" />
-                              <span>{booking.customerPhone}</span>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm">
-                            {new Date(booking.bookingDate).toLocaleDateString('zh-TW')}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm">{booking.timeSlot}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(booking.status)}
-                      </TableCell>
-                      <TableCell>
+                            </TableCell>
+                          )
+                        } else if (field.name === 'email') {
+                          return (
+                            <TableCell key={field._id}>
+                              <div className="flex items-center gap-1 text-sm">
+                                <Mail className="h-3 w-3 text-gray-400" />
+                                <span className="truncate max-w-[120px]" title={fieldValue || ''}>
+                                  {fieldValue || '—'}
+                                </span>
+                              </div>
+                            </TableCell>
+                          )
+                        } else if (field.name === 'customer_phone' || field.name === 'phone') {
+                          return (
+                            <TableCell key={field._id}>
+                              <div className="flex items-center gap-1 text-sm">
+                                <Phone className="h-3 w-3 text-gray-400" />
+                                <span>{fieldValue || '—'}</span>
+                              </div>
+                            </TableCell>
+                          )
+                        } else {
+                          // Các field khác
+                          return (
+                            <TableCell key={field._id}>
+                              <span className="text-sm">
+                                {fieldValue ? (Array.isArray(fieldValue) ? fieldValue.join(', ') : String(fieldValue)) : '—'}
+                              </span>
+                            </TableCell>
+                          )
+                        }
+                      })}
+                      {/* Chỉ cột thao tác là fix cứng - sticky */}
+                      <TableCell className="sticky right-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.1)] border-l border-gray-200">
                         <div className="flex items-center gap-1">
                           <Button
                             size="sm"
@@ -508,17 +549,18 @@ const BookingsList = () => {
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
-              </Table>
+                  </TableBody>
+                </Table>
+              </div>
 
               {/* Pagination */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <div className="text-sm text-gray-600">
                   {rangeFilter === 'last7'
-                    ? `最近 7 天共 ${totalItems} 筆結果（已確認）`
+                    ? `最近 7 天：顯示第 ${((currentPage - 1) * pageSize) + 1} - ${Math.min(currentPage * pageSize, totalItems)} 筆／共 ${totalItems} 筆`
                     : `顯示第 ${((currentPage - 1) * pageSize) + 1} - ${Math.min(currentPage * pageSize, totalItems)} 筆／共 ${totalItems} 筆`}
                 </div>
-                {rangeFilter === 'last7' ? null : (
+                {totalPages > 1 && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"

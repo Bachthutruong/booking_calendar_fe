@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 import { isPast, isToday } from '@/lib/utils'
 import { bookingAPI } from '@/lib/api'
 import { Calendar as CalendarIcon } from 'lucide-react'
@@ -219,7 +220,9 @@ const DateSelector = ({ onDateSelect }: DateSelectorProps) => {
                         <div className="flex flex-col items-center justify-center leading-tight">
                           <span>{date.getDate()}</span>
                           {isToday && (
-                            <span className="text-[10px] mt-0.5 text-orange-600">今天</span>
+                            <Badge className="text-sm font-semibold mt-0.5 bg-orange-500 text-white hover:bg-orange-600 border-0">
+                              今天
+                            </Badge>
                           )}
                         </div>
                       )

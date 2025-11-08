@@ -20,6 +20,8 @@ interface CustomField {
   options?: Array<{ label: string; value: string }>
   order: number
   isActive: boolean
+  isDefault?: boolean
+  showInTable?: boolean
 }
 
 const CustomFieldsManagement = () => {
@@ -39,6 +41,7 @@ const CustomFieldsManagement = () => {
     placeholder: '',
     order: 0,
     isActive: true,
+    showInTable: false,
     options: [] as Array<{ label: string; value: string }>
   })
 
@@ -112,6 +115,7 @@ const CustomFieldsManagement = () => {
       placeholder: '',
       order: 0,
       isActive: true,
+      showInTable: false,
       options: []
     })
   }
@@ -143,6 +147,7 @@ const CustomFieldsManagement = () => {
       placeholder: field.placeholder || '',
       order: field.order,
       isActive: field.isActive,
+      showInTable: field.showInTable || false,
       options: field.options || []
     })
     setIsDialogOpen(true)
@@ -257,6 +262,7 @@ const CustomFieldsManagement = () => {
                     <th className="px-6 py-4 text-left font-semibold text-gray-700">排序</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-700">狀態</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-700">必填</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700">顯示在列表</th>
                     <th className="px-6 py-4 text-left font-semibold text-gray-700">選項</th>
                     <th className="px-6 py-4 text-center font-semibold text-gray-700">操作</th>
                   </tr>
@@ -270,7 +276,14 @@ const CustomFieldsManagement = () => {
                             <FormInput className="h-4 w-4 text-purple-600" />
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">{field.label}</div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900">{field.label}</span>
+                              {field.isDefault && (
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                                  預設
+                                </span>
+                              )}
+                            </div>
                             <div className="text-sm text-gray-500">{field.name}</div>
                             {field.placeholder && (
                               <div className="text-xs text-gray-400 mt-1">
@@ -311,6 +324,17 @@ const CustomFieldsManagement = () => {
                         )}
                       </td>
                       <td className="px-6 py-4">
+                        {field.showInTable ? (
+                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                            是
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                            否
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         {field.options && field.options.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {field.options.slice(0, 2).map((option, index) => (
@@ -338,14 +362,17 @@ const CustomFieldsManagement = () => {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDelete(field)}
-                            className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {!field.isDefault && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(field)}
+                              className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
+                              title="Xóa field"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -449,18 +476,22 @@ const CustomFieldsManagement = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
               {editingField ? '編輯自訂欄位' : '建立新自訂欄位'}
             </DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="overflow-y-auto flex-1 pr-2">
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-gray-700">
                   欄位代號（英文與底線）
+                  {editingField?.isDefault && (
+                    <span className="ml-2 text-xs text-blue-600 font-normal">(預設欄位不可修改)</span>
+                  )}
                 </Label>
                 <Input
                   id="name"
@@ -468,7 +499,10 @@ const CustomFieldsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="customer_company"
                   required
-                  className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                  disabled={editingField?.isDefault}
+                  className={`border-gray-300 focus:border-purple-500 focus:ring-purple-500 ${
+                    editingField?.isDefault ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+                  }`}
                 />
                 <p className="text-xs text-gray-500">請使用小寫與底線</p>
               </div>
@@ -492,10 +526,16 @@ const CustomFieldsManagement = () => {
               <div className="space-y-2">
                 <Label htmlFor="type" className="text-sm font-medium text-gray-700">
                   欄位類型
+                  {editingField?.isDefault && (
+                    <span className="ml-2 text-xs text-blue-600 font-normal">(預設欄位不可修改)</span>
+                  )}
                 </Label>
                 <select
                   id="type"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  disabled={editingField?.isDefault}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                    editingField?.isDefault ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+                  }`}
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >
@@ -596,9 +636,18 @@ const CustomFieldsManagement = () => {
                 />
                 <span className="text-sm text-gray-700">啟用</span>
               </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.showInTable}
+                  onChange={(e) => setFormData({ ...formData, showInTable: e.target.checked })}
+                  className="mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">顯示在預約列表</span>
+              </label>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t sticky bottom-0 bg-white pb-2">
               <Button 
                 type="button" 
                 variant="outline" 
@@ -623,6 +672,7 @@ const CustomFieldsManagement = () => {
               </Button>
             </div>
           </form>
+          </div>
         </DialogContent>
       </Dialog>
 
