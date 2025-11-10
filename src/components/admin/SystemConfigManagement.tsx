@@ -118,14 +118,16 @@ const SystemConfigManagement = () => {
       }
 
       // Fetch each type to ensure backend defaults are returned if not configured yet
-      const [footerRes, emailTplRes, generalRes] = await Promise.all([
+      const [footerRes, emailConfigRes, emailTplRes, generalRes] = await Promise.all([
         api.get('/system-config/footer'),
+        api.get('/system-config/email_config'),
         api.get('/system-config/email_template'),
         api.get('/system-config/general')
       ])
 
       const configs = {
         footer: footerRes.data?.config || {},
+        email_config: emailConfigRes.data?.config || {},
         email_template: { ...defaultEmailTemplate, ...(emailTplRes.data?.config || {}) },
         general: { ...defaultGeneral, ...(generalRes.data?.config || {}) }
       }
@@ -189,10 +191,14 @@ const SystemConfigManagement = () => {
       </div>
 
       <Tabs defaultValue="footer" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="footer" className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             Footer
+          </TabsTrigger>
+          <TabsTrigger value="email_config" className="flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            Email Config
           </TabsTrigger>
           <TabsTrigger value="email_template" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
@@ -265,6 +271,79 @@ const SystemConfigManagement = () => {
                   placeholder="智慧且便利的諮詢預約系統"
                   rows={3}
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="email_config">
+          <Card>
+            <CardHeader>
+              <CardTitle>Email 設定</CardTitle>
+              <CardDescription>SMTP 郵件伺服器設定</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email_config.EMAIL_HOST">SMTP Host</Label>
+                  <Input
+                    id="email_config.EMAIL_HOST"
+                    type="text"
+                    {...register('email_config.EMAIL_HOST')}
+                    placeholder="smtp.gmail.com"
+                    defaultValue={prefill?.email_config?.EMAIL_HOST || ''}
+                  />
+                  <p className="text-xs text-gray-500">例如: smtp.gmail.com, smtp.office365.com</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email_config.EMAIL_PORT">SMTP Port</Label>
+                  <Input
+                    id="email_config.EMAIL_PORT"
+                    type="text"
+                    {...register('email_config.EMAIL_PORT')}
+                    placeholder="587"
+                    defaultValue={prefill?.email_config?.EMAIL_PORT || ''}
+                  />
+                  <p className="text-xs text-gray-500">通常為 587 (TLS) 或 465 (SSL)</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email_config.EMAIL_USER">Email 帳號</Label>
+                  <Input
+                    id="email_config.EMAIL_USER"
+                    type="email"
+                    {...register('email_config.EMAIL_USER')}
+                    placeholder="your_email@gmail.com"
+                    defaultValue={prefill?.email_config?.EMAIL_USER || ''}
+                  />
+                  <p className="text-xs text-gray-500">用於發送郵件的 Email 地址</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email_config.EMAIL_PASS">Email 密碼</Label>
+                  <Input
+                    id="email_config.EMAIL_PASS"
+                    type="password"
+                    {...register('email_config.EMAIL_PASS')}
+                    placeholder="••••••••"
+                    defaultValue={prefill?.email_config?.EMAIL_PASS || ''}
+                  />
+                  <p className="text-xs text-gray-500">Gmail 請使用 App Password</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="email_config.EMAIL_FROM">發送者名稱/Email</Label>
+                  <Input
+                    id="email_config.EMAIL_FROM"
+                    type="text"
+                    {...register('email_config.EMAIL_FROM')}
+                    placeholder="noreply@example.com"
+                    defaultValue={prefill?.email_config?.EMAIL_FROM || ''}
+                  />
+                  <p className="text-xs text-gray-500">顯示在收件人郵件中的發送者地址（可選，預設使用 EMAIL_USER）</p>
+                </div>
+              </div>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>注意：</strong> 如果未設定，系統將使用 .env 檔案中的預設值。
+                </p>
               </div>
             </CardContent>
           </Card>
